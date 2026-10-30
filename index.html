@@ -71,7 +71,7 @@ td.r,th.r{text-align:right}
 <nav>
  <button data-t="beranda" onclick="go('beranda')"><span>🏠</span>Beranda</button>
  <button data-t="iuran" onclick="go('iuran')"><span>💰</span>Iuran</button>
- <button data-t="murid" onclick="go('murid')"><span>👧</span>Murid</button>
+ <button data-t="murid" onclick="go('murid')"><span>👥</span>Data</button>
  <button data-t="laporan" onclick="go('laporan')"><span>📊</span>Laporan</button>
  <button data-t="atur" onclick="go('atur')"><span>⚙️</span>Atur</button>
 </nav>
@@ -88,8 +88,9 @@ td.r,th.r{text-align:right}
 }catch(e){}})();
 const KEY='rbm_keuangan_v1';
 const IURAN='Iuran bulanan';
+const HONOR='Honor guru';
 const BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const DEF={lembaga:'Rumah Belajar Maryam',saldoAwal:0,murid:[],trx:[],
+const DEF={lembaga:'Rumah Belajar Maryam',saldoAwal:0,murid:[],guru:[],trx:[],
  katMasuk:[IURAN,'Pendaftaran','Fun Holiday','Donasi','Lainnya'],
  katKeluar:['Honor guru','Listrik dan air','Alat belajar','Konsumsi kegiatan','Sewa dan perawatan','Lainnya'],lastBackup:''};
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -107,14 +108,20 @@ const sum=(a,f)=>a.reduce((x,y)=>x+f(y),0);
 const fmtNum=n=>n?new Intl.NumberFormat('id-ID').format(n):'';
 
 let db=load();
+function norm(d){
+ const x=Object.assign(clone(DEF),d);
+ if(!Array.isArray(x.guru))x.guru=[];
+ if(!x.katKeluar.includes(HONOR))x.katKeluar.unshift(HONOR);
+ return x;
+}
 function load(){
- try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.trx)&&Array.isArray(d.murid))return Object.assign(clone(DEF),d);}catch(e){}
+ try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.trx)&&Array.isArray(d.murid))return norm(d);}catch(e){}
  return clone(DEF);
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){toast('Gagal menyimpan, penyimpanan perangkat mungkin penuh');}}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2200);}
 
-const S={tab:'beranda',bulanIuran:thisMonth(),bulanLap:thisMonth(),lapMode:'bulan',tglTerima:today()};
+const S={tab:'beranda',bulanIuran:thisMonth(),bulanLap:thisMonth(),lapMode:'bulan',tglTerima:today(),dataTab:'murid',bulanGuru:thisMonth()};
 let lastBatch=[];
 let deferredInstall=null;
 
@@ -134,7 +141,7 @@ const cmpAsc=(a,b)=>a.tgl.localeCompare(b.tgl)||a.id.localeCompare(b.id);
 function group(list){const o={};list.forEach(t=>o[t.kategori]=(o[t.kategori]||0)+t.jumlah);return Object.entries(o).sort((a,b)=>b[1]-a[1]);}
 
 /* ---------- navigasi ---------- */
-function go(t){if(t==='iuran'&&S.tab!=='iuran')S.tglTerima=today();S.tab=t;render();window.scrollTo(0,0);}
+function go(t){if((t==='iuran'||t==='murid')&&S.tab!==t)S.tglTerima=today();S.tab=t;render();window.scrollTo(0,0);}
 function render(){
  $('#title').textContent=db.lembaga||'Kas';
  const views={beranda:vBeranda,iuran:vIuran,murid:vMurid,laporan:vLaporan,atur:vAtur};
@@ -147,7 +154,7 @@ function closeSheet(){$('#overlay').classList.remove('on');}
 
 /* ---------- tampilan: beranda ---------- */
 function trxRow(t){
- const nm=t.muridId?muridNama(t.muridId):'';
+ const nm=t.muridId?muridNama(t.muridId):(t.guruId?guruNama(t.guruId):'');
  const judul=t.kategori+(nm?' - '+nm:'')+(t.bulan?' ('+namaBulan(t.bulan)+')':'');
  return `<div class="item" onclick="openTrx('${t.id}')"><div class="grow"><div>${esc(judul)}</div><div class="mut">${tglIndo(t.tgl)}${t.ket?' &middot; '+esc(t.ket):''}</div></div><div class="${t.tipe==='masuk'?'in':'out'}">${t.tipe==='masuk'?'+':'-'}${rp(t.jumlah)}</div></div>`;
 }
@@ -163,6 +170,9 @@ function vBeranda(){
   const hari=db.lastBackup?Math.floor((Date.now()-new Date(db.lastBackup).getTime())/864e5):999;
   if(hari>=30)ban=`<div class="banner">Data belum dicadangkan ${db.lastBackup?hari+' hari':'sama sekali'}. Buka menu Atur lalu tekan Unduh cadangan, supaya catatan aman kalau HP atau tablet bermasalah.</div>`;
  }
+ const gl=db.guru.filter(g=>g.aktif!==false);
+ const gSudah=gl.filter(g=>statusGaji(g,ym).k==='ok').length;
+ const guruCard=gl.length?`<div class="card"><h2>Honor guru ${namaBulan(ym)}</h2><p style="margin:0 0 10px">${gSudah} dari ${gl.length} guru sudah dibayar. Honor yang sudah keluar bulan ini ${rp(sum(gl,g=>paidGuru(g.id,ym)))}.</p><button class="btn2 full" onclick="S.dataTab='guru';S.bulanGuru=thisMonth();go('murid')">Bayar honor guru</button></div>`:'';
  const recent=db.trx.slice().sort(cmpDesc).slice(0,6);
  return `${ban}
  <div class="card"><div class="mut">Saldo kas saat ini</div><div class="big">${rp(saldo)}</div></div>
@@ -176,7 +186,7 @@ function vBeranda(){
   <button class="full" onclick="S.bulanIuran=thisMonth();go('iuran')">Catat iuran bulan ini</button>`
   :`<p class="mut">Belum ada murid. Tambahkan murid dulu di menu Murid supaya iuran bisa dilacak satu per satu.</p><button class="btn2 full" onclick="go('murid')">Ke menu Murid</button>`}
  </div>
- <div class="card"><h2>Transaksi terakhir</h2>${recent.length?recent.map(trxRow).join(''):'<div class="empty">Belum ada catatan. Tekan tombol + untuk mencatat yang pertama.</div>'}</div>`;
+ ${guruCard}<div class="card"><h2>Transaksi terakhir</h2>${recent.length?recent.map(trxRow).join(''):'<div class="empty">Belum ada catatan. Tekan tombol + untuk mencatat yang pertama.</div>'}</div>`;
 }
 
 /* ---------- tampilan: iuran ---------- */
@@ -186,16 +196,15 @@ function vIuran(){
  const ord={bad:0,warn:1,ok:2};
  list.sort((a,b)=>ord[a.s.k]-ord[b.s.k]||a.m.nama.localeCompare(b.m.nama));
  const target=sum(list,x=>x.m.tarif),kumpul=sum(list,x=>Math.min(x.s.p,x.m.tarif));
- const lunas=list.filter(x=>x.s.k==='ok').length;
- const belum=list.length-lunas;
+ const bayar=list.filter(x=>x.m.tarif>0);const lunas=bayar.filter(x=>x.s.k==='ok').length;const belum=bayar.length-lunas;const subs=list.length-bayar.length;
  return `<div class="card"><div class="grid2"><div><label style="margin-top:0">Bulan iuran</label>
   <input type="month" value="${ym}" onchange="S.bulanIuran=this.value||thisMonth();render()"></div>
   <div><label style="margin-top:0">Tanggal diterima</label><input type="date" value="${S.tglTerima}" onchange="S.tglTerima=this.value||today()"></div></div>
-  ${list.length?`<p style="margin:12px 0 4px">Terkumpul <b>${rp(kumpul)}</b> dari target ${rp(target)}. Lunas ${lunas} dari ${list.length} murid.</p>
+  ${list.length?`<p style="margin:12px 0 4px">Terkumpul <b>${rp(kumpul)}</b> dari target ${rp(target)}. Lunas ${lunas} dari ${bayar.length} murid yang membayar${subs?' ('+subs+' murid subsidi tidak membayar)':''}.</p>
   <div class="bar"><i style="width:${target?Math.round(kumpul/target*100):0}%"></i></div>
   ${belum?`<button class="full" style="margin-top:12px" onclick="semuaLunas()">Tandai semua yang belum sebagai lunas (${belum})</button>`:''}`:''}
  </div>
- <div class="card">${list.length?`<p class="mut" style="margin:0 0 4px">Ketuk tombol Lunas untuk mencatat sisa iuran murid sekali ketuk. Ketuk namanya untuk cicilan atau bayar beberapa bulan.</p>`+list.map(({m,s})=>`<div class="item" style="cursor:default"><div class="grow" onclick="detailMurid('${m.id}')" style="cursor:pointer"><div>${esc(m.nama)}</div><div class="mut">${s.k==='ok'?'Terbayar '+rp(s.p):'Terbayar '+rp(s.p)+' dari '+rp(m.tarif)}</div></div>${s.k==='ok'?'<span class="badge b-ok">Lunas</span>':`<span class="badge b-${s.k}">${s.t}</span><button class="btn2" onclick="quickLunas('${m.id}')">Lunas</button>`}</div>`).join('')
+ <div class="card">${list.length?`<p class="mut" style="margin:0 0 4px">Ketuk tombol Lunas untuk mencatat sisa iuran murid sekali ketuk. Ketuk namanya untuk cicilan atau bayar beberapa bulan.</p>`+list.map(({m,s})=>`<div class="item" style="cursor:default"><div class="grow" onclick="detailMurid('${m.id}')" style="cursor:pointer"><div>${esc(m.nama)}</div><div class="mut">${m.tarif===0?'Subsidi, tidak ada iuran':(s.k==='ok'?'Terbayar '+rp(s.p):'Terbayar '+rp(s.p)+' dari '+rp(m.tarif))}</div></div>${m.tarif===0?'<span class="badge b-off">Subsidi</span>':s.k==='ok'?'<span class="badge b-ok">Lunas</span>':`<span class="badge b-${s.k}">${s.t}</span><button class="btn2" onclick="quickLunas('${m.id}')">Lunas</button>`}</div>`).join('')
   :`<div class="empty">Belum ada murid yang wajib iuran di bulan ini. Tambahkan murid di menu Murid, atau impor daftar namanya sekaligus.</div>`}</div>`;
 }
 function catatLunas(m,ym,tgl){
@@ -277,10 +286,132 @@ function waLink(m,ym){
  return 'https://wa.me/'+p+'?text='+encodeURIComponent(msg);
 }
 
+/* ---------- guru dan honor ---------- */
+function guruNama(id){const g=db.guru.find(x=>x.id===id);return g?g.nama:'';}
+function paidGuru(id,ym){return sum(db.trx.filter(t=>t.tipe==='keluar'&&t.kategori===HONOR&&t.guruId===id&&t.bulan===ym),t=>t.jumlah);}
+function statusGaji(g,ym){
+ const p=paidGuru(g.id,ym);
+ if(g.honor>0&&p>=g.honor)return {k:'ok',t:'Sudah',p};
+ if(p>0)return {k:'warn',t:'Sebagian',p};
+ return {k:'bad',t:'Belum',p};
+}
+function vGuru(){
+ const ym=S.bulanGuru;
+ const list=db.guru.filter(g=>g.aktif!==false).map(g=>({g,s:statusGaji(g,ym)}));
+ const ord={bad:0,warn:1,ok:2};
+ list.sort((a,b)=>ord[a.s.k]-ord[b.s.k]||a.g.nama.localeCompare(b.g.nama));
+ const total=sum(list,x=>x.g.honor),dibayar=sum(list,x=>x.s.p);
+ const belum=list.filter(x=>x.s.k!=='ok'&&x.g.honor>0&&x.g.honor-x.s.p>0).length;
+ return `<div style="height:12px"></div><div class="grid2"><button onclick="formGuru()">+ Tambah guru</button><button class="btn2" onclick="formImporGuru()">Impor daftar</button></div><div style="height:12px"></div>
+ <div class="card"><div class="grid2"><div><label style="margin-top:0">Bulan honor</label><input type="month" value="${ym}" onchange="S.bulanGuru=this.value||thisMonth();render()"></div>
+  <div><label style="margin-top:0">Tanggal dibayar</label><input type="date" value="${S.tglTerima}" onchange="S.tglTerima=this.value||today()"></div></div>
+  ${list.length?`<p style="margin:12px 0 4px">Sudah dibayar <b>${rp(dibayar)}</b> dari total honor ${rp(total)}.</p>
+  ${belum?`<button class="full" style="margin-top:8px" onclick="semuaGaji()">Bayar semua honor yang belum (${belum})</button>`:''}`:''}
+ </div>
+ <div class="card">${list.length?list.map(({g,s})=>`<div class="item" style="cursor:default"><div class="grow" onclick="detailGuru('${g.id}')" style="cursor:pointer"><div>${esc(g.nama)}</div><div class="mut">${g.honor?'Honor '+rp(g.honor)+' per bulan':'Honor belum diisi'}${s.p?' &middot; dibayar '+rp(s.p):''}</div></div>${s.k==='ok'?'<span class="badge b-ok">Sudah</span>':`<span class="badge b-${s.k}">${s.t}</span><button class="btn2" onclick="quickGaji('${g.id}')">Bayar</button>`}</div>`).join('')
+ :'<div class="empty">Belum ada guru. Tekan Tambah guru, atau Impor daftar kalau namanya sudah ada di file.</div>'}</div>`;
+}
+function catatGaji(g,ym,tgl){
+ const sisa=g.honor-paidGuru(g.id,ym);
+ if(!(g.honor>0&&sisa>0))return null;
+ const rec={id:uid(),tipe:'keluar',tgl,kategori:HONOR,jumlah:sisa,ket:'Honor '+namaBulan(ym),muridId:'',guruId:g.id,bulan:ym};
+ db.trx.push(rec);return rec.id;
+}
+function quickGaji(id){
+ const g=db.guru.find(x=>x.id===id);if(!g)return;
+ const r=catatGaji(g,S.bulanGuru,S.tglTerima||today());
+ if(!r){openTrx(null,{tipe:'keluar',kategori:HONOR,guruId:id,bulan:S.bulanGuru,jumlah:g.honor||0,tgl:S.tglTerima||today()});return;}
+ lastBatch=[r];save();render();toastUndo('Honor '+g.nama+' dicatat dibayar');
+}
+function semuaGaji(){
+ const ym=S.bulanGuru;
+ const gs=db.guru.filter(g=>g.aktif!==false&&g.honor>0&&g.honor-paidGuru(g.id,ym)>0);
+ if(!gs.length)return;
+ if(!confirm('Catat honor '+namaBulan(ym)+' untuk '+gs.length+' guru sebagai sudah dibayar? Pastikan uangnya memang sudah diserahkan.'))return;
+ lastBatch=gs.map(g=>catatGaji(g,ym,S.tglTerima||today())).filter(Boolean);
+ save();render();toastUndo(lastBatch.length+' honor guru dicatat');
+}
+function detailGuru(id){
+ const g=db.guru.find(x=>x.id===id);if(!g)return;
+ const ym=S.bulanGuru,s=statusGaji(g,ym),sisa=Math.max(0,g.honor-s.p);
+ const pays=db.trx.filter(t=>t.tipe==='keluar'&&t.kategori===HONOR&&t.guruId===id&&t.bulan===ym).sort(cmpAsc);
+ openSheet(`<h2>${esc(g.nama)}</h2>
+ <p class="mut" style="margin-top:-6px">Honor ${namaBulan(ym)}: ${g.honor?rp(g.honor):'belum diisi'}</p>
+ <p>Status: <span class="badge b-${s.k}">${s.t}</span> &nbsp; Dibayar ${rp(s.p)}${sisa?', sisa <b>'+rp(sisa)+'</b>':''}</p>
+ ${pays.length?pays.map(t=>`<div class="item" onclick="openTrx('${t.id}')"><div class="grow">${tglIndo(t.tgl)}<div class="mut">${esc(t.ket||'')}</div></div><div class="out">-${rp(t.jumlah)}</div></div>`).join(''):'<p class="mut">Belum ada pembayaran tercatat bulan ini.</p>'}
+ <div style="display:grid;gap:8px;margin-top:12px">
+  <button onclick="openTrx(null,{tipe:'keluar',kategori:HONOR,guruId:'${g.id}',bulan:'${ym}',jumlah:${sisa||g.honor||0},tgl:S.tglTerima||today()})">Catat pembayaran</button>
+  <button class="btn2" onclick="formGuru('${g.id}')">Ubah data guru</button>
+  <button class="btn2" onclick="closeSheet()">Tutup</button>
+ </div>`);
+}
+function formGuru(id){
+ const g=id?db.guru.find(x=>x.id===id):{id:'',nama:'',honor:0,aktif:true};
+ const dipakai=id&&db.trx.some(t=>t.guruId===id);
+ openSheet(`<h2>${id?'Ubah data guru':'Tambah guru'}</h2>
+ <label>Nama guru</label><input id="g_nama" value="${esc(g.nama)}">
+ <label>Honor per bulan (Rp), boleh dikosongkan dulu</label><input id="g_honor" inputmode="numeric" value="${fmtNum(g.honor)}" oninput="fmtInput(this)">
+ <label class="row" style="margin-top:14px"><input type="checkbox" id="g_aktif" ${g.aktif!==false?'checked':''}> Masih mengajar</label>
+ <div style="display:grid;gap:8px;margin-top:14px">
+  <button onclick="saveGuru('${id||''}')">Simpan</button>
+  ${id&&!dipakai?`<button class="btnr" onclick="delGuru('${id}')">Hapus guru</button>`:''}
+  ${id&&dipakai?'<p class="mut">Guru ini sudah punya catatan honor, jadi tidak bisa dihapus. Hilangkan centang kalau sudah tidak mengajar.</p>':''}
+  <button class="btn2" onclick="closeSheet()">Batal</button>
+ </div>`);
+}
+function saveGuru(id){
+ const nama=$('#g_nama').value.trim();
+ if(!nama)return toast('Nama guru belum diisi');
+ let g=id?db.guru.find(x=>x.id===id):null;
+ if(!g){g={id:uid()};db.guru.push(g);}
+ Object.assign(g,{nama,honor:num($('#g_honor').value),aktif:$('#g_aktif').checked});
+ save();closeSheet();render();toast('Tersimpan');
+}
+function delGuru(id){
+ if(!confirm('Hapus guru ini?'))return;
+ db.guru=db.guru.filter(g=>g.id!==id);save();closeSheet();render();
+}
+function formImporGuru(){
+ openSheet(`<h2>Impor daftar guru</h2>
+ <p class="mut" style="margin-top:-6px">Pilih file CSV atau tempel dari Excel. Satu guru per baris: Nama, Honor per bulan. Honor boleh dikosongkan dan diisi nanti.</p>
+ <label class="btn btn2" style="text-align:center;margin:0 0 8px;display:block">Pilih file CSV atau teks<input type="file" accept=".csv,.txt,text/csv,text/plain" style="display:none" onchange="bacaFileGuru(this)"></label>
+ <textarea id="g_txt" rows="6" placeholder="Nama,Honor per bulan&#10;Aisyah,500000&#10;Fatimah" oninput="prevGuru()"></textarea>
+ <p id="g_prev" class="mut" style="margin:10px 0"></p>
+ <div style="display:grid;gap:8px"><button onclick="doImporGuru()">Impor</button><button class="btn2" onclick="closeSheet()">Batal</button></div>`);
+ prevGuru();
+}
+function bacaFileGuru(inp){
+ const f=inp.files[0];if(!f)return;
+ const r=new FileReader();r.onload=()=>{$('#g_txt').value=String(r.result).replace(/^﻿/,'');prevGuru();};r.readAsText(f);inp.value='';
+}
+function parseGuru(){
+ const ada=new Set(db.guru.map(g=>g.nama.trim().toLowerCase()));
+ const out=[],lewat=[];
+ $('#g_txt').value.split(/\r?\n/).map(x=>x.trim()).filter(x=>x.replace(/[\t;,\s]/g,'')).forEach((ln,i)=>{
+  const p=splitRow(ln);
+  if(i===0&&/^nama/i.test(p[0]))return;
+  const nama=p[0];if(!nama)return;
+  if(ada.has(nama.toLowerCase())){lewat.push(nama);return;}
+  ada.add(nama.toLowerCase());
+  out.push({nama,honor:num(p[1])});
+ });
+ return {out,lewat};
+}
+function prevGuru(){
+ const {out,lewat}=parseGuru();
+ $('#g_prev').innerHTML=out.length?`Akan ditambahkan <b>${out.length}</b> guru.`+(lewat.length?` ${lewat.length} nama dilewati karena sudah ada.`:''):(lewat.length?'Semua nama sudah ada di daftar.':'Belum ada nama yang terbaca.');
+}
+function doImporGuru(){
+ const {out}=parseGuru();
+ if(!out.length)return toast('Belum ada nama yang bisa diimpor');
+ out.forEach(o=>db.guru.push({id:uid(),nama:o.nama,honor:o.honor,aktif:true}));
+ save();closeSheet();render();toast(out.length+' guru ditambahkan');
+}
+
 /* ---------- impor murid ---------- */
 function formImpor(){
  openSheet(`<h2>Impor daftar murid</h2>
- <p class="mut" style="margin-top:-6px">Tempel nama murid, satu murid per baris. Boleh dari Excel, WhatsApp, atau file CSV. Kalau ingin lengkap, urutannya: Nama, Program, Iuran per bulan, Nomor WhatsApp wali (dipisah koma, titik koma, atau tab). Yang wajib hanya nama.</p>
+ <p class="mut" style="margin-top:-6px">Pilih file CSV atau tempel dari Excel. Kalau baris pertama berisi judul kolom (Nama, GENDER, KELAS, Program, Iuran per bulan, dan seterusnya), aplikasi membacanya otomatis. Tanpa judul, urutannya: Nama, Program, Iuran, WhatsApp wali. Yang wajib hanya nama. Iuran 0 dianggap murid subsidi.</p>
  <label class="btn btn2" style="text-align:center;margin:0 0 8px;display:block">Pilih file CSV atau teks<input type="file" accept=".csv,.txt,text/csv,text/plain" style="display:none" onchange="bacaFileImpor(this)"></label>
  <textarea id="imp_txt" rows="7" placeholder="Aisyah, Tahfidz, 150000, 08123456789&#10;Zahra, Calistung, 120000&#10;Fatimah" oninput="prevImpor()"></textarea>
  <label>Iuran per bulan untuk baris yang tidak mencantumkan iuran (Rp)</label>
@@ -293,18 +424,36 @@ function bacaFileImpor(inp){
  const f=inp.files[0];if(!f)return;
  const r=new FileReader();r.onload=()=>{$('#imp_txt').value=String(r.result).replace(/^﻿/,'');prevImpor();};r.readAsText(f);inp.value='';
 }
+function splitRow(ln){return ln.split(/[\t;,]/).map(x=>x.trim());}
 function parseImpor(){
  const dt=num($('#imp_tarif').value);
- const lines=$('#imp_txt').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const lines=$('#imp_txt').value.split(/\r?\n/).map(x=>x.trim()).filter(x=>x.replace(/[\t;,\s]/g,''));
  const ada=new Set(db.murid.map(m=>m.nama.trim().toLowerCase()));
  const baru=[],lewat=[];
- lines.forEach((ln,i)=>{
-  const p=ln.split(/[\t;,]/).map(x=>x.trim());
-  if(i===0&&/^nama/i.test(p[0]))return;
-  const nama=p[0];if(!nama)return;
-  if(ada.has(nama.toLowerCase())){lewat.push(nama);return;}
-  ada.add(nama.toLowerCase());
-  baru.push({nama,program:p[1]||'',tarif:num(p[2])||dt,hp:p[3]||''});
+ let kol=null,start=0;
+ if(lines.length&&/^nama/i.test(splitRow(lines[0])[0])){
+  kol={};
+  splitRow(lines[0]).forEach((h,i)=>{
+   const k=h.toLowerCase();
+   if(/^nama/.test(k))kol.nama=i;
+   else if(/gender|jenis|^jk$|kelamin/.test(k))kol.gender=i;
+   else if(/kelas/.test(k))kol.kelas=i;
+   else if(/program/.test(k))kol.program=i;
+   else if(/iuran|tarif|spp/.test(k))kol.tarif=i;
+   else if(/wa|hp|telp|whatsapp/.test(k))kol.hp=i;
+   else if((/ket/.test(k)||k==='')&&kol.ket==null)kol.ket=i;
+  });
+  start=1;
+ }
+ lines.slice(start).forEach(ln=>{
+  const p=splitRow(ln);
+  let r;
+  if(kol){const g=k=>kol[k]==null?'':(p[kol[k]]||'');r={nama:g('nama'),gender:g('gender').toUpperCase().slice(0,1),kelas:g('kelas'),program:g('program'),tarifTxt:g('tarif'),hp:g('hp'),ket:g('ket')};}
+  else r={nama:p[0]||'',gender:'',kelas:'',program:p[1]||'',tarifTxt:p[2]||'',hp:p[3]||'',ket:''};
+  if(!r.nama)return;
+  if(ada.has(r.nama.toLowerCase())){lewat.push(r.nama);return;}
+  ada.add(r.nama.toLowerCase());
+  baru.push({nama:r.nama,gender:(r.gender==='L'||r.gender==='P')?r.gender:'',kelas:r.kelas,program:r.program,tarif:r.tarifTxt!==''?num(r.tarifTxt):dt,hp:r.hp,ket:r.ket});
  });
  return {baru,lewat,dt};
 }
@@ -315,19 +464,23 @@ function prevImpor(){
 function doImpor(){
  const {baru,dt}=parseImpor();
  if(!baru.length)return toast('Belum ada nama yang bisa diimpor');
- baru.forEach(b=>db.murid.push({id:uid(),nama:b.nama,program:b.program,tarif:b.tarif,hp:b.hp,mulai:thisMonth(),aktif:true}));
+ baru.forEach(b=>db.murid.push({id:uid(),nama:b.nama,gender:b.gender,kelas:b.kelas,program:b.program,tarif:b.tarif,ket:b.ket,hp:b.hp,mulai:thisMonth(),aktif:true}));
  db.tarifDefault=dt;save();closeSheet();render();toast(baru.length+' murid ditambahkan');
 }
 function unduhContoh(){
- const rows=['Nama,Program,Iuran per bulan,WhatsApp wali','Aisyah,Tahfidz,150000,08123456789','Zahra,Calistung,120000,','Fatimah,Fun Holiday,100000,'];
+ const rows=['Nama,GENDER,KELAS,Program,Iuran per bulan,Keterangan','Aisyah,P,2,BIMBEL,150000,','Alif,L,7,MENGAJI,30000,','Ibrahim,L,4,BIMBEL,0,SUBSIDI'];
  download('﻿'+rows.join('\r\n'),'text/csv;charset=utf-8','daftar-murid-contoh.csv');
 }
 
 /* ---------- tampilan: murid ---------- */
-function vMurid(){
+function dataSeg(){
+ return `<div class="seg"><button class="${S.dataTab==='murid'?'on':''}" onclick="S.dataTab='murid';render()">Murid (${db.murid.length})</button><button class="${S.dataTab==='guru'?'on':''}" onclick="S.dataTab='guru';render()">Guru (${db.guru.length})</button></div>`;
+}
+function vMurid(){return dataSeg()+(S.dataTab==='guru'?vGuru():vMuridList());}
+function vMuridList(){
  const list=db.murid.slice().sort((a,b)=>(b.aktif-a.aktif)||a.nama.localeCompare(b.nama));
  return `<div class="grid2"><button onclick="formMurid()">+ Tambah murid</button><button class="btn2" onclick="formImpor()">Impor daftar</button></div><div style="height:12px"></div>
- <div class="card">${list.length?list.map(m=>`<div class="item" onclick="formMurid('${m.id}')"><div class="grow"><div>${esc(m.nama)}</div><div class="mut">${esc(m.program||'-')} &middot; ${rp(m.tarif)} per bulan</div></div>${m.aktif?'':'<span class="badge b-off">Nonaktif</span>'}</div>`).join('')
+ <div class="card">${list.length?list.map(m=>`<div class="item" onclick="formMurid('${m.id}')"><div class="grow"><div>${esc(m.nama)}</div><div class="mut">${[m.gender,m.kelas?'Kelas '+m.kelas:'',m.program].filter(Boolean).map(esc).join(' &middot; ')||'-'} &middot; ${m.tarif?rp(m.tarif)+' per bulan':'Subsidi (gratis)'}</div></div>${m.aktif?'':'<span class="badge b-off">Nonaktif</span>'}</div>`).join('')
  :'<div class="empty">Belum ada murid. Tekan Tambah murid, atau Impor daftar kalau namanya sudah ada di file.</div>'}</div>`;
 }
 function formMurid(id){
@@ -335,8 +488,10 @@ function formMurid(id){
  const dipakai=id&&db.trx.some(t=>t.muridId===id);
  openSheet(`<h2>${id?'Ubah data murid':'Tambah murid'}</h2>
  <label>Nama murid</label><input id="m_nama" value="${esc(m.nama)}">
- <label>Program atau kelas (boleh dikosongkan)</label><input id="m_prog" value="${esc(m.program)}" placeholder="Contoh: Calistung, Tahfidz, Kelas 3">
+ <div class="grid2"><div><label>Jenis kelamin</label><select id="m_gen"><option value="">-</option><option value="L" ${m.gender==='L'?'selected':''}>Laki-laki (L)</option><option value="P" ${m.gender==='P'?'selected':''}>Perempuan (P)</option></select></div><div><label>Kelas</label><input id="m_kelas" value="${esc(m.kelas||'')}" placeholder="2, 7, TK"></div></div>
+ <label>Program</label><input id="m_prog" value="${esc(m.program)}" placeholder="Contoh: BIMBEL, MENGAJI">
  <label>Iuran per bulan (Rp)</label><input id="m_tarif" inputmode="numeric" value="${fmtNum(m.tarif)}" oninput="fmtInput(this)">
+ <label>Keterangan (boleh dikosongkan)</label><input id="m_ket" value="${esc(m.ket||'')}" placeholder="Contoh: SUBSIDI">
  <label>Nomor WhatsApp wali (boleh dikosongkan)</label><input id="m_hp" inputmode="tel" value="${esc(m.hp)}" placeholder="08xxxxxxxxxx">
  <label>Mulai iuran dari bulan</label><input id="m_mulai" type="month" value="${m.mulai||thisMonth()}">
  <label class="row" style="margin-top:14px"><input type="checkbox" id="m_aktif" ${m.aktif?'checked':''}> Murid masih aktif</label>
@@ -357,7 +512,7 @@ function saveMurid(id){
  const isNew=!m;
  if(isNew){m={id:uid()};db.murid.push(m);}
  const wasActive=isNew?true:m.aktif;
- Object.assign(m,{nama,program:$('#m_prog').value.trim(),tarif,hp:$('#m_hp').value.trim(),mulai:$('#m_mulai').value||thisMonth(),aktif});
+ Object.assign(m,{nama,gender:$('#m_gen').value,kelas:$('#m_kelas').value.trim(),ket:$('#m_ket').value.trim(),program:$('#m_prog').value.trim(),tarif,hp:$('#m_hp').value.trim(),mulai:$('#m_mulai').value||thisMonth(),aktif});
  if(!aktif&&wasActive)m.berhenti=thisMonth();
  if(aktif)delete m.berhenti;
  save();closeSheet();render();toast('Tersimpan');
@@ -372,7 +527,7 @@ let F={};
 function fmtInput(el){const n=num(el.value);el.value=fmtNum(n);}
 function openTrx(id,pre){
  const t=id?db.trx.find(x=>x.id===id):null;
- F=t?Object.assign({},t):Object.assign({id:'',tipe:'masuk',tgl:today(),kategori:IURAN,jumlah:0,ket:'',muridId:'',bulan:thisMonth()},pre||{});
+ F=t?Object.assign({},t):Object.assign({id:'',tipe:'masuk',tgl:today(),kategori:IURAN,jumlah:0,ket:'',muridId:'',guruId:'',bulan:thisMonth()},pre||{});
  drawTrx();
 }
 function syncF(){
@@ -380,9 +535,16 @@ function syncF(){
  if(!g('f_tgl'))return;
  F.tgl=g('f_tgl').value;F.kategori=g('f_kat').value;F.jumlah=num(g('f_jml').value);F.ket=g('f_ket').value;
  if(g('f_murid')){F.muridId=g('f_murid').value;F.bulan=g('f_bln').value||thisMonth();}
+ if(g('f_guru')){F.guruId=g('f_guru').value;F.bulan=g('f_gbln').value||thisMonth();}
 }
 function setTipe(t){syncF();F.tipe=t;F.kategori=(t==='masuk'?db.katMasuk:db.katKeluar)[0];drawTrx();}
 function onKat(){syncF();drawTrx();}
+function onGuru(){
+ syncF();
+ const gu=db.guru.find(x=>x.id===F.guruId);
+ if(gu&&!F.id)F.jumlah=Math.max(0,gu.honor-paidGuru(gu.id,F.bulan))||gu.honor||0;
+ drawTrx();
+}
 function onMurid(){
  syncF();
  const m=db.murid.find(x=>x.id===F.muridId);
@@ -393,6 +555,8 @@ function drawTrx(){
  let kats=(F.tipe==='masuk'?db.katMasuk:db.katKeluar).slice();
  if(!kats.includes(F.kategori))kats.push(F.kategori);
  const iur=F.tipe==='masuk'&&F.kategori===IURAN;
+ const hon=F.tipe==='keluar'&&F.kategori===HONOR;
+ const guruL=db.guru.filter(g=>g.aktif!==false||g.id===F.guruId).sort((a,b)=>a.nama.localeCompare(b.nama));
  const murid=db.murid.filter(m=>m.aktif||m.id===F.muridId).sort((a,b)=>a.nama.localeCompare(b.nama));
  openSheet(`<h2>${F.id?'Ubah transaksi':'Catat transaksi'}</h2>
  <div class="seg"><button class="${F.tipe==='masuk'?'on m':''}" onclick="setTipe('masuk')">Uang masuk</button><button class="${F.tipe==='keluar'?'on k':''}" onclick="setTipe('keluar')">Uang keluar</button></div>
@@ -400,6 +564,8 @@ function drawTrx(){
  <label>Kategori</label><select id="f_kat" onchange="onKat()">${kats.map(k=>`<option ${k===F.kategori?'selected':''}>${esc(k)}</option>`).join('')}</select>
  ${iur?`<label>Nama murid</label><select id="f_murid" onchange="onMurid()"><option value="">Pilih murid</option>${murid.map(m=>`<option value="${m.id}" ${m.id===F.muridId?'selected':''}>${esc(m.nama)}</option>`).join('')}</select>
  <label>Untuk iuran bulan</label><input type="month" id="f_bln" value="${F.bulan||thisMonth()}" onchange="onMurid()">`:''}
+ ${hon?`<label>Nama guru</label><select id="f_guru" onchange="onGuru()"><option value="">Pilih guru</option>${guruL.map(g=>`<option value="${g.id}" ${g.id===F.guruId?'selected':''}>${esc(g.nama)}</option>`).join('')}</select>
+ <label>Untuk honor bulan</label><input type="month" id="f_gbln" value="${F.bulan||thisMonth()}" onchange="onGuru()">`:''}
  <label>Jumlah (Rp)</label><input id="f_jml" inputmode="numeric" value="${fmtNum(F.jumlah)}" oninput="fmtInput(this)">
  <label>Keterangan (boleh dikosongkan)</label><input id="f_ket" value="${esc(F.ket)}" placeholder="Contoh: transfer, tunai, beli spidol">
  <div style="display:grid;gap:8px;margin-top:14px">
@@ -414,7 +580,9 @@ function saveTrx(){
  if(F.jumlah<=0)return toast('Jumlah belum diisi');
  const iur=F.tipe==='masuk'&&F.kategori===IURAN;
  if(iur&&!F.muridId)return toast('Pilih nama murid dulu');
- const rec={id:F.id||uid(),tipe:F.tipe,tgl:F.tgl,kategori:F.kategori,jumlah:F.jumlah,ket:(F.ket||'').trim(),muridId:iur?F.muridId:'',bulan:iur?F.bulan:''};
+ const hon=F.tipe==='keluar'&&F.kategori===HONOR;
+ if(hon&&!F.guruId)return toast('Pilih nama guru dulu');
+ const rec={id:F.id||uid(),tipe:F.tipe,tgl:F.tgl,kategori:F.kategori,jumlah:F.jumlah,ket:(F.ket||'').trim(),muridId:iur?F.muridId:'',guruId:hon?F.guruId:'',bulan:(iur||hon)?F.bulan:''};
  const i=db.trx.findIndex(x=>x.id===rec.id);
  if(i>=0)db.trx[i]=rec;else db.trx.push(rec);
  save();closeSheet();render();toast('Tersimpan');
@@ -442,15 +610,21 @@ function vLaporan(){
  const tot=totals(list),awal=saldoAwalPeriode(),akhir=awal+tot.masuk-tot.keluar,selisih=tot.masuk-tot.keluar;
  const periode=mode==='semua'?'seluruh periode pencatatan':namaBulan(ym);
  const gm=group(list.filter(t=>t.tipe==='masuk')),gk=group(list.filter(t=>t.tipe==='keluar'));
- let iuranHtml='';
+ let iuranHtml='',honorHtml='';
  if(mode==='bulan'){
   const wm=db.murid.filter(m=>wajib(m,ym)).sort((a,b)=>a.nama.localeCompare(b.nama));
   if(wm.length){
-   const lunas=wm.filter(m=>paidFor(m.id,ym)>=m.tarif).length;
-   iuranHtml=`<div class="card"><h2>Status iuran murid</h2><p>Dari ${wm.length} murid, ${lunas} sudah lunas pada ${namaBulan(ym)}.</p>
+   const wb=wm.filter(m=>m.tarif>0);const lunas=wb.filter(m=>paidFor(m.id,ym)>=m.tarif).length;
+   iuranHtml=`<div class="card"><h2>Status iuran murid</h2><p>Dari ${wb.length} murid yang membayar, ${lunas} sudah lunas pada ${namaBulan(ym)}.${wm.length>wb.length?' Ada '+(wm.length-wb.length)+' murid subsidi yang tidak membayar iuran.':''}</p>
    <table><tr><th>Nama</th><th class="r">Iuran</th><th class="r">Terbayar</th><th class="r">Sisa</th></tr>
    ${wm.map(m=>{const p=paidFor(m.id,ym);return `<tr><td>${esc(m.nama)}</td><td class="r">${rp(m.tarif)}</td><td class="r">${rp(p)}</td><td class="r">${rp(Math.max(0,m.tarif-p))}</td></tr>`;}).join('')}</table></div>`;
   }
+ }
+ if(mode==='bulan'&&db.guru.length){
+  const gl=db.guru.filter(g=>g.aktif!==false||paidGuru(g.id,ym)>0).sort((a,b)=>a.nama.localeCompare(b.nama));
+  const sudah=gl.filter(g=>statusGaji(g,ym).k==='ok').length;
+  honorHtml=`<div class="card"><h2>Honor guru</h2><p>Pada ${namaBulan(ym)}, ${sudah} dari ${gl.length} guru sudah menerima honor, dengan total pengeluaran ${rp(sum(gl,g=>paidGuru(g.id,ym)))}.</p>
+  <table><tr><th>Nama</th><th class="r">Honor</th><th class="r">Dibayar</th></tr>${gl.map(g=>`<tr><td>${esc(g.nama)}</td><td class="r">${g.honor?rp(g.honor):'-'}</td><td class="r">${rp(paidGuru(g.id,ym))}</td></tr>`).join('')}</table></div>`;
  }
  return `<div class="printonly"><h2 style="font-size:18pt">Laporan Keuangan ${esc(db.lembaga)}</h2><p>Periode: ${periode}</p></div>
  <div class="card noprint">
@@ -464,7 +638,7 @@ function vLaporan(){
  </div>
  <div class="card"><h2>Uang masuk per kategori</h2>${katBlock(gm,'in')}</div>
  <div class="card"><h2>Uang keluar per kategori</h2>${katBlock(gk,'out')}</div>
- ${iuranHtml}
+ ${iuranHtml}${honorHtml}
  <div class="card"><h2>Daftar transaksi</h2>${list.length?list.map(trxRow).join(''):'<div class="empty">Belum ada transaksi pada periode ini.</div>'}</div>`;
 }
 const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
@@ -490,8 +664,8 @@ function cetakLaporan(){
 function csv(){
  const list=periodTrx().slice().sort(cmpAsc);
  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
- const rows=[['Tanggal','Jenis','Kategori','Murid','Bulan iuran','Keterangan','Jumlah'].map(q).join(',')];
- list.forEach(t=>rows.push([t.tgl,t.tipe==='masuk'?'Masuk':'Keluar',t.kategori,muridNama(t.muridId),t.bulan,t.ket,t.jumlah].map(q).join(',')));
+ const rows=[['Tanggal','Jenis','Kategori','Murid atau guru','Bulan','Keterangan','Jumlah'].map(q).join(',')];
+ list.forEach(t=>rows.push([t.tgl,t.tipe==='masuk'?'Masuk':'Keluar',t.kategori,muridNama(t.muridId)||guruNama(t.guruId),t.bulan,t.ket,t.jumlah].map(q).join(',')));
  download('\ufeff'+rows.join('\r\n'),'text/csv;charset=utf-8','kas-'+(S.lapMode==='semua'?'semua':S.bulanLap)+'.csv');
 }
 
@@ -542,7 +716,7 @@ function restore(inp){
    const d=JSON.parse(r.result);
    if(!Array.isArray(d.trx)||!Array.isArray(d.murid))throw 0;
    if(!confirm('Data yang ada sekarang akan diganti dengan isi file cadangan. Lanjutkan?'))return;
-   db=Object.assign(clone(DEF),d);save();render();toast('Data berhasil dipulihkan');
+   db=norm(d);save();render();toast('Data berhasil dipulihkan');
   }catch(e){toast('File cadangan tidak dikenali');}
  };
  r.readAsText(f);inp.value='';
