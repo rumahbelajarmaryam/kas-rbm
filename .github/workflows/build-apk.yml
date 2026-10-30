@@ -1,0 +1,86 @@
+name: Bangun APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - debug.keystore
+      - .github/workflows/build-apk.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Siapkan proyek Android
+        run: |
+          mkdir -p www
+          cp index.html www/index.html
+          npm init -y
+          npm i @capacitor/core @capacitor/cli @capacitor/android @capacitor/filesystem @capacitor/share @capacitor/assets
+          npx cap telemetry off || true
+          npx cap init "Kas RBM" "id.rbm.kas" --web-dir=www
+          npx cap add android
+          npx cap sync android
+
+      - name: Pasang ikon aplikasi
+        continue-on-error: true
+        run: |
+          mkdir -p assets
+          python3 - <<'EOF'
+          import re, base64
+          s = open('index.html', encoding='utf-8').read()
+          m = re.search(r"src:'data:image/png;base64,([^']+)'", s)
+          open('assets/icon-only.png', 'wb').write(base64.b64decode(m.group(1)))
+          EOF
+          pip install pillow
+          python3 -c "from PIL import Image; Image.open('assets/icon-only.png').convert('RGB').resize((1024,1024), Image.LANCZOS).save('assets/icon-only.png')"
+          npx capacitor-assets generate --android --iconBackgroundColor '#0f766e' --iconBackgroundColorDark '#0f766e'
+
+      - name: Pakai kunci tanda tangan tetap
+        run: |
+          mkdir -p ~/.android
+          if [ -f debug.keystore ]; then cp debug.keystore ~/.android/debug.keystore; fi
+
+      - name: Naikkan nomor versi
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: Bangun APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Ganti nama file APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Kas-RBM.apk
+
+      - name: Simpan sebagai artifact cadangan
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kas-RBM-apk
+          path: Kas-RBM.apk
+
+      - name: Terbitkan di Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.${{ github.run_number }}
+          name: Kas RBM versi 1.${{ github.run_number }}
+          body: Unduh file Kas-RBM.apk di bawah ini, lalu pasang di HP Android.
+          files: Kas-RBM.apk
