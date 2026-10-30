@@ -456,7 +456,7 @@ function vLaporan(){
  <div class="card noprint">
   <div class="seg"><button class="${mode==='bulan'?'on':''}" onclick="S.lapMode='bulan';render()">Per bulan</button><button class="${mode==='semua'?'on':''}" onclick="S.lapMode='semua';render()">Semua waktu</button></div>
   ${mode==='bulan'?`<input type="month" value="${ym}" onchange="S.bulanLap=this.value||thisMonth();render()">`:''}
-  <div class="grid2" style="margin-top:10px"><button onclick="window.print()">Cetak atau simpan PDF</button><button class="btn2" onclick="csv()">Unduh Excel (CSV)</button></div>
+  <div class="grid2" style="margin-top:10px"><button onclick="cetakLaporan()">${NATIVE?'Bagikan laporan (untuk dicetak)':'Cetak atau simpan PDF'}</button><button class="btn2" onclick="csv()">Unduh Excel (CSV)</button></div>
  </div>
  <div class="card"><h2>Ringkasan ${mode==='semua'?'keseluruhan':namaBulan(ym)}</h2>
   <p>Pada ${periode}, ${esc(db.lembaga)} menerima kas sebesar <b>${rp(tot.masuk)}</b> dan mengeluarkan <b>${rp(tot.keluar)}</b>. ${selisih>=0?'Ada kelebihan kas sebesar':'Kas berkurang sebesar'} ${rp(Math.abs(selisih))}, sehingga saldo akhir menjadi <b>${rp(akhir)}</b>.</p>
@@ -467,9 +467,25 @@ function vLaporan(){
  ${iuranHtml}
  <div class="card"><h2>Daftar transaksi</h2>${list.length?list.map(trxRow).join(''):'<div class="empty">Belum ada transaksi pada periode ini.</div>'}</div>`;
 }
-function download(text,type,name){
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+async function download(text,type,name){
+ if(NATIVE){
+  try{
+   const FS=window.Capacitor.registerPlugin('Filesystem'),SH=window.Capacitor.registerPlugin('Share');
+   const r=await FS.writeFile({path:name,data:text,directory:'CACHE',encoding:'utf8'});
+   await SH.share({title:name,url:r.uri,dialogTitle:'Simpan atau kirim file'});
+  }catch(e){const m=String((e&&e.message)||e);if(!/cancel/i.test(m))toast('Gagal membagikan file: '+m);}
+  return;
+ }
  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;
  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function cetakLaporan(){
+ if(!NATIVE){window.print();return;}
+ const css=document.querySelector('style').textContent;
+ const isi=$('#app').innerHTML;
+ const html='<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laporan Keuangan</title><style>'+css+'body{padding:12px}.noprint{display:none!important}.printonly{display:block}</style></head><body><main>'+isi+'</main></body></html>';
+ download(html,'text/html;charset=utf-8','laporan-'+(S.lapMode==='semua'?'semua':S.bulanLap)+'.html');
 }
 function csv(){
  const list=periodTrx().slice().sort(cmpAsc);
