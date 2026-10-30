@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAMSklEQVR4Xu2ce2wUxxnAZ2/v/Difz+AHxu/3Azs44dU4TngYJYFEqFKb0EZVW5omlFZQVNIElEr9J1FoqqZVRZQ/ipJWUatGTduoEqEkIYEm5llIADvYxCaAjbF9Nj5z5mzf+W5vK/cq93TmvHM3t7Mzs9/v77m93W9/883stzMrZe3eiQAgUSyJ/hAAZgCBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACJAIIAIEAggAgQCiACBACKsRL8WCNv65nivJnDkVLw/EQ/zCpSAMVFEHcGcPplLIHJp5iHy4OaRSXyBdJUmFuaRSWSBDFFnLuHTEDUnCSgQI97EmjAJZpJQArGpzh1NEkYjQQTiQp1IhBnXuBeIO3UE04jvSjTX9szC9VXwmoG4DrpIT2pcZiDB7OE6FXGWgURVJ8ohjp7ReMpAwtvDYyriRiDz2BOGl+vlYAjjJZRJh4taEesZyLT28DKcMS0Q2MP+cMauQGDP3Jo1gzAqENgTq9jIGiwKBPbEgsHIMCcQgzFiCtbiw5ZArEWHTZiKEkMCMRUXxmEnVgwJBPAIKwKx06V4gZGIMSEQI7HgDhbiZrxALESBXwyPnvECAVxjsECGdyABMDaGRgpk7JWLhIGRNFIgQAAME8jATiMkRsXTmBWJOFf7h3se2JRfktjNDqlqQA35QyFPYNoTnB7wTfZNTXR7xztuj13wuANqKLHDMo5tfTP91fjGCKQ3FklKleRUi+y02kpQxl2ZC2f/cUIJto263hnqPei6Ph0S0ySaGDCE4aQf/ciQrRsXFe1vavlszVe3ltXKkqTff9GHfmwNEIgR8lPT99av+KB5Q0l6BiOnxCO0BaLfReanybnwcPOG2gwnjzfvjlCOMG2BGCQnJfUvK1uzrCkMnhv7UBWIcufApzjN/kL9Mvz2jEMzzlQFYplvFlZUZWSyfIZsAgL9D1mSvlVUyeZNYhl6dSCd8uqWc23/HO6PDHGaPFP+qbI7Vy3I3VxYXu/IwrwBD+UVvdh9AbMx41ArKgqYgXyKMuz3nRwb3ne1c+2JQ/hO1DuynFYb42awBqUMpFP60SSkqvuudhal2b9fWqPZWEKo3O5oHx/TbJkwdtnamrt4TfbihswF5XaH02pLtcgTSnDIP9Xt9bS5Xe8N3xjwTSZ8/EjoJCFKAhnLb65cfLK0BqfknJeShnOq9zizD9+3Yf6W1ya9q9oOzLbJTUnbVdnwRFHl3CTntNqcVltthnNTfsne+hWHhvtfvtzxhdeDcyaGI+AQNheXf+rS7Vs4sbbLuvSoLSXVZ1Zv+kFZneYQKUvSpvySj1se+VlNk5WH1yymEAgh1OebwBHIF1JwmuGTYrHsb2p5pWGVI57ZlSxJuyob317ZGtevDIGGQEZNgCK5HQzgxPdWYBqnGSapFvmt5eu+VlCG2T6K1dn5f1/ZSpIUKUSehkAsoDl2hLk+hZWocLBIaP/dLWty8nEax2J5Vs4bd9+PM3szCrMIVGHXrjIP+aeG/FPJuhOl6Y5HFxWTH+3BvMKdFQ3kx9EJUwhUnGavwXjf/vHokE5RJmRPzdJqjPM3BN0FojAMa/Jc9VLNNgihP/V/idOMPjbJ8mJdgu969Y6/Lk+t7CBL0jOVjTgvuU6PjZwaG9HvzI+ODv1t4Oq/b910+adSJLkwLX1dbsG3i6swlyI9mFfY5Fyoa5EzMQQUKLwUujrDee/C3G8UVuAMXtOh0LOdZxKLoCYTSnBHx6l3XddnW04hxeOd7vJ6Xu/t3l299CeVWFOcbWX12ztOav4dZbgX6M1lqwlDFlLV7R0nL+lT+Q2ooS3n2mLNrgJq6KWemde3OA5tyi9+rtM6qQQJrze56D4HYhyfouz4/NQ/hvp0Os/9vd2ac/OXL7d3YRTK7bJ1bc5inc4zYfQVSO8ZHCHt42MPn/7grwPXCI8Tiwkl+OsvP9c8uKKqey+3azZDCCVWVdL1LnA/hCXGxdu3Xr3a+c5gr5rY7/F4b/gGZgX8o5HBscD0QpvGuuxlWTl4/0wP0wnkU5QXes6/3tutqzph3h+5gXknA2ro6M3Br2u99FjiyJIQonDm+Og7hDFImizvrV/xyf2PPpRXqPfpXYxnaVGXV3u9gF225uAtOKGG6QQKU+/I+vPytb9YssKi25IJRVWvTN7Gv5Hd3nGcxotT03GaUcOkAoV5urT2taXNOr2q9CqBoBrHaOMJYi0EcNrYWnRraoEQQo8XlGO+6IgXbzC+gg1m+1SLHO+Z6Ar3k+jIXRmpFjk7JaXBseCRRcWbC8sxV9L8tLLxmNt1wj2sa6BFRagM5A8pg76pj24OPtt55r5jBzHfbVkkad9d9ya9Zzus8XVOzPb+ZK+ZJEQogSIZ8E0+dvbIyTGsvFKW7thZsYQwlFE4ZFtc347B3Jw/HsBaWkkNYQVCaOYV6ffOHxv2+3CiuaNiCeaWDExkSarCWMU2S60D6wshSVzylhREFggh5J727+7Ces1ul63PVDUmJaazNDr//2U0TZY4Fmi2mVSCo9NY/YEagguEEDro6j/mduEE9LvF1QVpyayyPIxdq7RJltbcAs2T7PJ64igMUEF8gRBCmLubUyyW5K4+3phXlIm3m2d9boHmizCE0DnPKBUr4sAUAn3mGT1ycxAnKt8prspPXqnXYbXtqtQeFi2S9HxNE87pfTKKlUppYgqBEEK/wlhWgdBMJenHSX0c21ZW90C2xs6ePVVLGzOxJkCaS4voYxaBzt66iRn9LcXVSXwcS7FY/rhsdaz9PTbJ8nx1E+bk/V1XP2vLERHSWSD6372eh1fwklCaLO9IahJyWG1vLlv99op1jxeUl6Y7wp8vqnNkbSurO9qyEdMehNDvei8llmB0vQvxVUu55tTYyAn3cEv2Is2reLKkZt/VztFpv2ZLfFpzC3Ces2Lx4cgAg1sydM9ArIGZhNJleXt5kgvTJATU0M+/OEdyBP0wyxwoTJvbdRpv89dTpTXZKan6xT0uftnTcXkCa7UQfcwlEEIIZ5U7QjOF6R+V1ZPcj74pb9THGxPjw5GBV691JfZbCugukK4zuAQ4Ojr0KV457unSGpziXixCKtrWfqINrwgei3Me91MXjofiWZgWhd7x110gBsFMQg6r7YdkScinKE98+q+EN50dc7seO3uEwUf3SMwo0OGRgQvjbhyzt5bVYq6yiMV0KLT1wvE9XWcn4tlRqqjqb69c3Hz2KOauIAMxo0D/nQldxAl6ptW2rbwOp+X8/L6v5yttB97o6/FqfShNUdWDrv51Jw691NMe15Jqo5Cydu+k8N+6bo6kTwJfaQ2TIVvX5xasyVnckJlVnp7ptNpsFsukEpz5DKjXc9w9fGi4/0aSPvOLkO4TIITMVEhkgQkleMB1/UDElzp4x6RDGJAsQCCACEoC6V2NAOZCJ+aUBAJEhZ5AdDoEEIZatOkJBAgJCAQQQVUgannV5NCMM1WBAPGgLRDNzmFOKEeYtkCAYBggEOUuYirox9ZEuzKSyPlxd977byXxgPxiQAaiWeYyFfTTj5Hbegy5WoExKp7GZCBAGIwUyKhOIx4GRtJIgWAylBQMtMfIORAgBgZnIEhChBibfljJQIZHgVNYiJvxGSgMC7HgC0YixopAAKcwJBAjXYoL2IkVQwLBQIYJO/awMomOhKnoMAhr8WErA8GEen5Ys4fFDAQOxYJBe9gVCOZDUbBpD9MCgUOzMGsP6wKBQ+xHgIMlreH+J9gnqnBgOfHMwuJT2B3hIppJhJfr5UYg9pN5EuHFHv4+cSf8cMaROmF4ykBcPJWQwJ09/GWgKIeEmVnzqA7HGUiwVMSvPRxnIDFSEdfqhOGgDoQDd5NrAdQRSqAwXGgkjDoCChSpEWvFa8G8mUWQIeyOMJKQRFVH2AwUReT9o/bYL7Y0kYicgeaiq0zmkca8AkUSdb8TSE7mNCYKc2WgeQAbEoPLd2EAO4BAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRIBAABEgEEAECAQQAQIBRPwH2KO1EhiNxPIAAAAASUVORK5CYII=">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<title>Kas Rumah Belajar Maryam</title>
+<style>
+:root{--g:#0f766e;--g2:#14b8a6;--bg:#f4f7f6;--card:#fff;--tx:#1b2b29;--mut:#64748b;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);padding-bottom:100px}
+header.top{background:var(--g);color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top))}
+header.top h1{margin:0;font-size:19px}
+header.top small{opacity:.85}
+main{max-width:720px;margin:0 auto;padding:14px}
+h2{font-size:17px;margin:4px 0 10px}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.big{font-size:28px;font-weight:700}
+.row{display:flex;gap:10px;align-items:center}
+.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mut{color:var(--mut);font-size:14px}
+.badge{padding:2px 10px;border-radius:99px;font-size:13px;font-weight:600;white-space:nowrap}
+.b-ok{background:#dcfce7;color:var(--ok)}.b-warn{background:#fef3c7;color:var(--warn)}.b-bad{background:#fee2e2;color:var(--bad)}.b-off{background:#e2e8f0;color:#475569}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.item:last-child{border-bottom:0}
+.in{color:var(--ok);font-weight:600;white-space:nowrap}.out{color:var(--bad);font-weight:600;white-space:nowrap}
+button,.btn{font:inherit;border:0;border-radius:10px;padding:10px 16px;background:var(--g);color:#fff;font-weight:600;cursor:pointer}
+.btn2{background:#e6f4f1;color:var(--g)}.btnr{background:#fee2e2;color:var(--bad)}.full{width:100%}
+input,select,textarea{font:inherit;width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:var(--tx)}
+input[type=checkbox]{width:auto}
+label{display:block;font-size:14px;color:var(--mut);margin:10px 0 4px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:8px 2px;font-size:12px;font-weight:600}
+nav button span{display:block;font-size:20px}
+nav button.on{color:var(--g)}
+.fab{position:fixed;right:16px;bottom:calc(78px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;font-size:30px;padding:0;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:6}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20}
+#overlay.on{display:flex}
+#sheet{background:#fff;width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;padding-bottom:calc(22px + env(safe-area-inset-bottom))}
+.seg{display:flex;gap:8px;margin-bottom:6px}
+.seg button{flex:1;background:#e2e8f0;color:#334155}
+.seg button.on{background:var(--g);color:#fff}
+.seg button.on.m{background:var(--ok)}.seg button.on.k{background:var(--bad)}
+.bar{height:8px;background:#e2e8f0;border-radius:9px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--g2)}
+.banner{background:#fef3c7;color:#78350f;border-radius:12px;padding:12px;margin-bottom:12px}
+.chip{display:inline-flex;gap:8px;align-items:center;background:#e6f4f1;color:var(--g);padding:4px 12px;border-radius:99px;margin:3px;font-size:14px}
+.chip b{cursor:pointer;color:var(--bad)}
+.empty{text-align:center;color:var(--mut);padding:18px 8px}
+#toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;display:none;z-index:50;max-width:90%}
+.printonly{display:none}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.r,th.r{text-align:right}
+@media print{
+ body{background:#fff;font-size:12pt;padding:0}
+ header.top,nav,.fab,.noprint,#overlay,#toast{display:none!important}
+ .printonly{display:block}
+ .card{box-shadow:none;border:1px solid #cbd5e1;break-inside:avoid}
+ main{max-width:none;padding:0}
+}
+</style>
+</head>
+<body>
+<header class="top"><h1 id="title">Rumah Belajar Maryam</h1><small>Kas dan iuran murid</small></header>
+<main id="app"></main>
+<button class="fab noprint" id="fab" onclick="openTrx()" aria-label="Catat transaksi">+</button>
+<nav>
+ <button data-t="beranda" onclick="go('beranda')"><span>🏠</span>Beranda</button>
+ <button data-t="iuran" onclick="go('iuran')"><span>💰</span>Iuran</button>
+ <button data-t="murid" onclick="go('murid')"><span>👧</span>Murid</button>
+ <button data-t="laporan" onclick="go('laporan')"><span>📊</span>Laporan</button>
+ <button data-t="atur" onclick="go('atur')"><span>⚙️</span>Atur</button>
+</nav>
+<div id="overlay" onclick="if(event.target===this)closeSheet()"><div id="sheet"></div></div>
+<div id="toast"></div>
+
+<script>
+(function(){try{
+ const base=location.href.split('#')[0].split('?')[0];
+ const man={name:'Kas Rumah Belajar Maryam',short_name:'Kas RBM',start_url:base,scope:base.replace(/[^\/]*$/,''),display:'standalone',background_color:'#f4f7f6',theme_color:'#0f766e',lang:'id',icons:[{src:'data:image/png;base64,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',sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
+ const l=document.createElement('link');l.rel='manifest';
+ l.href=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:'application/manifest+json'}));
+ document.head.appendChild(l);
+}catch(e){}})();
+const KEY='rbm_keuangan_v1';
+const IURAN='Iuran bulanan';
+const BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DEF={lembaga:'Rumah Belajar Maryam',saldoAwal:0,murid:[],trx:[],
+ katMasuk:[IURAN,'Pendaftaran','Fun Holiday','Donasi','Lainnya'],
+ katKeluar:['Honor guru','Listrik dan air','Alat belajar','Konsumsi kegiatan','Sewa dan perawatan','Lainnya'],lastBackup:''};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const $=s=>document.querySelector(s);
+const rp=n=>(n<0?'-':'')+'Rp'+new Intl.NumberFormat('id-ID').format(Math.abs(Math.round(n||0)));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const pad=n=>String(n).padStart(2,'0');
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const thisMonth=()=>today().slice(0,7);
+const namaBulan=ym=>{const [y,m]=ym.split('-');return BULAN[+m-1]+' '+y;};
+const tglIndo=s=>{const [y,m,d]=s.split('-');return (+d)+' '+BULAN[+m-1].slice(0,3)+' '+y;};
+const num=v=>+(String(v==null?'':v).replace(/\D/g,''))||0;
+const sum=(a,f)=>a.reduce((x,y)=>x+f(y),0);
+const fmtNum=n=>n?new Intl.NumberFormat('id-ID').format(n):'';
+
+let db=load();
+function load(){
+ try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.trx)&&Array.isArray(d.murid))return Object.assign(clone(DEF),d);}catch(e){}
+ return clone(DEF);
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){toast('Gagal menyimpan, penyimpanan perangkat mungkin penuh');}}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2200);}
+
+const S={tab:'beranda',bulanIuran:thisMonth(),bulanLap:thisMonth(),lapMode:'bulan',tglTerima:today()};
+let lastBatch=[];
+let deferredInstall=null;
+
+/* ---------- helper data ---------- */
+function totals(list){return {masuk:sum(list.filter(t=>t.tipe==='masuk'),t=>t.jumlah),keluar:sum(list.filter(t=>t.tipe==='keluar'),t=>t.jumlah)};}
+function paidFor(id,ym){return sum(db.trx.filter(t=>t.tipe==='masuk'&&t.kategori===IURAN&&t.muridId===id&&t.bulan===ym),t=>t.jumlah);}
+function wajib(m,ym){return (m.mulai||'0000-00')<=ym&&(m.aktif?true:ym<(m.berhenti||'0000-00'));}
+function muridNama(id){const m=db.murid.find(x=>x.id===id);return m?m.nama:'';}
+function statusIuran(m,ym){
+ const p=paidFor(m.id,ym);
+ if(p>=m.tarif)return {k:'ok',t:'Lunas',p};
+ if(p>0)return {k:'warn',t:'Sebagian',p};
+ return {k:'bad',t:'Belum',p};
+}
+const cmpDesc=(a,b)=>b.tgl.localeCompare(a.tgl)||b.id.localeCompare(a.id);
+const cmpAsc=(a,b)=>a.tgl.localeCompare(b.tgl)||a.id.localeCompare(b.id);
+function group(list){const o={};list.forEach(t=>o[t.kategori]=(o[t.kategori]||0)+t.jumlah);return Object.entries(o).sort((a,b)=>b[1]-a[1]);}
+
+/* ---------- navigasi ---------- */
+function go(t){if(t==='iuran'&&S.tab!=='iuran')S.tglTerima=today();S.tab=t;render();window.scrollTo(0,0);}
+function render(){
+ $('#title').textContent=db.lembaga||'Kas';
+ const views={beranda:vBeranda,iuran:vIuran,murid:vMurid,laporan:vLaporan,atur:vAtur};
+ $('#app').innerHTML=views[S.tab]();
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
+ $('#fab').style.display=(S.tab==='atur')?'none':'block';
+}
+function openSheet(h){$('#sheet').innerHTML=h;$('#overlay').classList.add('on');}
+function closeSheet(){$('#overlay').classList.remove('on');}
+
+/* ---------- tampilan: beranda ---------- */
+function trxRow(t){
+ const nm=t.muridId?muridNama(t.muridId):'';
+ const judul=t.kategori+(nm?' - '+nm:'')+(t.bulan?' ('+namaBulan(t.bulan)+')':'');
+ return `<div class="item" onclick="openTrx('${t.id}')"><div class="grow"><div>${esc(judul)}</div><div class="mut">${tglIndo(t.tgl)}${t.ket?' &middot; '+esc(t.ket):''}</div></div><div class="${t.tipe==='masuk'?'in':'out'}">${t.tipe==='masuk'?'+':'-'}${rp(t.jumlah)}</div></div>`;
+}
+function vBeranda(){
+ const ym=thisMonth(),all=totals(db.trx),bln=totals(db.trx.filter(t=>t.tgl.slice(0,7)===ym));
+ const saldo=db.saldoAwal+all.masuk-all.keluar;
+ const wm=db.murid.filter(m=>wajib(m,ym));
+ const target=sum(wm,m=>m.tarif),kumpul=sum(wm,m=>Math.min(paidFor(m.id,ym),m.tarif));
+ const belum=wm.filter(m=>paidFor(m.id,ym)<m.tarif).length;
+ const pct=target?Math.round(kumpul/target*100):0;
+ let ban='';
+ if(db.trx.length>0){
+  const hari=db.lastBackup?Math.floor((Date.now()-new Date(db.lastBackup).getTime())/864e5):999;
+  if(hari>=30)ban=`<div class="banner">Data belum dicadangkan ${db.lastBackup?hari+' hari':'sama sekali'}. Buka menu Atur lalu tekan Unduh cadangan, supaya catatan aman kalau HP atau tablet bermasalah.</div>`;
+ }
+ const recent=db.trx.slice().sort(cmpDesc).slice(0,6);
+ return `${ban}
+ <div class="card"><div class="mut">Saldo kas saat ini</div><div class="big">${rp(saldo)}</div></div>
+ <div class="grid2">
+  <div class="card"><div class="mut">Masuk ${namaBulan(ym)}</div><div class="in" style="font-size:19px">${rp(bln.masuk)}</div></div>
+  <div class="card"><div class="mut">Keluar ${namaBulan(ym)}</div><div class="out" style="font-size:19px">${rp(bln.keluar)}</div></div>
+ </div>
+ <div class="card"><h2>Iuran ${namaBulan(ym)}</h2>
+  ${wm.length?`<div class="row"><div class="grow">Terkumpul ${rp(kumpul)} dari ${rp(target)}</div><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
+  <p class="mut" style="margin:8px 0 10px">${belum?belum+' murid belum lunas bulan ini.':'Semua murid sudah lunas bulan ini. Alhamdulillah.'}</p>
+  <button class="full" onclick="S.bulanIuran=thisMonth();go('iuran')">Catat iuran bulan ini</button>`
+  :`<p class="mut">Belum ada murid. Tambahkan murid dulu di menu Murid supaya iuran bisa dilacak satu per satu.</p><button class="btn2 full" onclick="go('murid')">Ke menu Murid</button>`}
+ </div>
+ <div class="card"><h2>Transaksi terakhir</h2>${recent.length?recent.map(trxRow).join(''):'<div class="empty">Belum ada catatan. Tekan tombol + untuk mencatat yang pertama.</div>'}</div>`;
+}
+
+/* ---------- tampilan: iuran ---------- */
+function vIuran(){
+ const ym=S.bulanIuran;
+ const list=db.murid.filter(m=>wajib(m,ym)).map(m=>({m,s:statusIuran(m,ym)}));
+ const ord={bad:0,warn:1,ok:2};
+ list.sort((a,b)=>ord[a.s.k]-ord[b.s.k]||a.m.nama.localeCompare(b.m.nama));
+ const target=sum(list,x=>x.m.tarif),kumpul=sum(list,x=>Math.min(x.s.p,x.m.tarif));
+ const lunas=list.filter(x=>x.s.k==='ok').length;
+ const belum=list.length-lunas;
+ return `<div class="card"><div class="grid2"><div><label style="margin-top:0">Bulan iuran</label>
+  <input type="month" value="${ym}" onchange="S.bulanIuran=this.value||thisMonth();render()"></div>
+  <div><label style="margin-top:0">Tanggal diterima</label><input type="date" value="${S.tglTerima}" onchange="S.tglTerima=this.value||today()"></div></div>
+  ${list.length?`<p style="margin:12px 0 4px">Terkumpul <b>${rp(kumpul)}</b> dari target ${rp(target)}. Lunas ${lunas} dari ${list.length} murid.</p>
+  <div class="bar"><i style="width:${target?Math.round(kumpul/target*100):0}%"></i></div>
+  ${belum?`<button class="full" style="margin-top:12px" onclick="semuaLunas()">Tandai semua yang belum sebagai lunas (${belum})</button>`:''}`:''}
+ </div>
+ <div class="card">${list.length?`<p class="mut" style="margin:0 0 4px">Ketuk tombol Lunas untuk mencatat sisa iuran murid sekali ketuk. Ketuk namanya untuk cicilan atau bayar beberapa bulan.</p>`+list.map(({m,s})=>`<div class="item" style="cursor:default"><div class="grow" onclick="detailMurid('${m.id}')" style="cursor:pointer"><div>${esc(m.nama)}</div><div class="mut">${s.k==='ok'?'Terbayar '+rp(s.p):'Terbayar '+rp(s.p)+' dari '+rp(m.tarif)}</div></div>${s.k==='ok'?'<span class="badge b-ok">Lunas</span>':`<span class="badge b-${s.k}">${s.t}</span><button class="btn2" onclick="quickLunas('${m.id}')">Lunas</button>`}</div>`).join('')
+  :`<div class="empty">Belum ada murid yang wajib iuran di bulan ini. Tambahkan murid di menu Murid, atau impor daftar namanya sekaligus.</div>`}</div>`;
+}
+function catatLunas(m,ym,tgl){
+ const sisa=m.tarif-paidFor(m.id,ym);
+ if(sisa<=0)return null;
+ const rec={id:uid(),tipe:'masuk',tgl,kategori:IURAN,jumlah:sisa,ket:'Lunas',muridId:m.id,bulan:ym};
+ db.trx.push(rec);return rec.id;
+}
+function quickLunas(id){
+ const m=db.murid.find(x=>x.id===id);if(!m)return;
+ const r=catatLunas(m,S.bulanIuran,S.tglTerima||today());
+ if(!r)return;
+ lastBatch=[r];save();render();toastUndo(m.nama+' lunas');
+}
+function semuaLunas(){
+ const ym=S.bulanIuran;
+ const ms=db.murid.filter(m=>wajib(m,ym)&&paidFor(m.id,ym)<m.tarif);
+ if(!ms.length)return;
+ if(!confirm('Tandai '+ms.length+' murid sebagai lunas untuk '+namaBulan(ym)+'? Pastikan uangnya memang sudah diterima.'))return;
+ lastBatch=ms.map(m=>catatLunas(m,ym,S.tglTerima||today())).filter(Boolean);
+ save();render();toastUndo(lastBatch.length+' murid ditandai lunas');
+}
+function undoBatch(){
+ db.trx=db.trx.filter(t=>!lastBatch.includes(t.id));lastBatch=[];save();render();toast('Dibatalkan');
+}
+function toastUndo(t){
+ const e=$('#toast');
+ e.innerHTML=esc(t)+' &nbsp;<a href="#" onclick="undoBatch();return false" style="color:#5eead4;font-weight:700">Batalkan</a>';
+ e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',6000);
+}
+function addMonth(ym,n){
+ let [y,m]=ym.split('-').map(Number);m+=n;y+=Math.floor((m-1)/12);m=((m-1)%12)+1;return y+'-'+pad(m);
+}
+function formBanyak(id){
+ const m=db.murid.find(x=>x.id===id);if(!m)return;
+ openSheet(`<h2>Bayar beberapa bulan sekaligus</h2>
+ <p class="mut" style="margin-top:-6px">${esc(m.nama)} &middot; iuran ${rp(m.tarif)} per bulan, mulai dari ${namaBulan(S.bulanIuran)}</p>
+ <label>Jumlah bulan</label><select id="bn" onchange="prevBanyak('${id}')">${[2,3,4,5,6,7,8,9,10,11,12].map(n=>`<option>${n}</option>`).join('')}</select>
+ <p id="bprev" style="margin:12px 0"></p>
+ <div style="display:grid;gap:8px"><button onclick="saveBanyak('${id}')">Simpan</button><button class="btn2" onclick="detailMurid('${id}')">Kembali</button></div>`);
+ prevBanyak(id);
+}
+function banyakList(id){
+ const m=db.murid.find(x=>x.id===id),n=+$('#bn').value,out=[];
+ for(let i=0;i<n;i++){const ym=addMonth(S.bulanIuran,i),sisa=m.tarif-paidFor(id,ym);if(sisa>0)out.push([ym,sisa]);}
+ return out;
+}
+function prevBanyak(id){
+ const l=banyakList(id),n=+$('#bn').value;
+ $('#bprev').innerHTML=l.length?`Akan dicatat ${l.length} bulan, dari ${namaBulan(l[0][0])} sampai ${namaBulan(l[l.length-1][0])}, total <b>${rp(sum(l,x=>x[1]))}</b>.`+(l.length<n?' Bulan yang sudah lunas dilewati.':''):'Semua bulan tersebut sudah lunas.';
+}
+function saveBanyak(id){
+ const l=banyakList(id),n=+$('#bn').value;
+ if(!l.length)return toast('Tidak ada yang perlu dicatat');
+ lastBatch=l.map(([ym,sisa])=>{const r={id:uid(),tipe:'masuk',tgl:S.tglTerima||today(),kategori:IURAN,jumlah:sisa,ket:'Bayar '+n+' bulan sekaligus',muridId:id,bulan:ym};db.trx.push(r);return r.id;});
+ save();closeSheet();render();toastUndo(lastBatch.length+' bulan tercatat');
+}
+
+function detailMurid(id){
+ const m=db.murid.find(x=>x.id===id);if(!m)return;
+ const ym=S.bulanIuran,s=statusIuran(m,ym),sisa=Math.max(0,m.tarif-s.p);
+ const pays=db.trx.filter(t=>t.tipe==='masuk'&&t.kategori===IURAN&&t.muridId===id&&t.bulan===ym).sort(cmpAsc);
+ openSheet(`<h2>${esc(m.nama)}</h2>
+ <p class="mut" style="margin-top:-6px">${esc(m.program||'')}${m.program?' &middot; ':''}Iuran ${namaBulan(ym)}: ${rp(m.tarif)}</p>
+ <p>Status: <span class="badge b-${s.k}">${s.t}</span> &nbsp; Terbayar ${rp(s.p)}${sisa?', sisa <b>'+rp(sisa)+'</b>':''}</p>
+ ${pays.length?pays.map(t=>`<div class="item" onclick="openTrx('${t.id}')"><div class="grow">${tglIndo(t.tgl)}<div class="mut">${esc(t.ket||'')}</div></div><div class="in">+${rp(t.jumlah)}</div></div>`).join(''):'<p class="mut">Belum ada pembayaran tercatat bulan ini.</p>'}
+ <div style="display:grid;gap:8px;margin-top:12px">
+  <button onclick="openTrx(null,{tipe:'masuk',kategori:IURAN,muridId:'${m.id}',bulan:'${ym}',jumlah:${sisa||m.tarif}})">Catat pembayaran</button>
+  <button class="btn2" onclick="formBanyak('${m.id}')">Bayar beberapa bulan sekaligus</button>
+  ${sisa&&m.hp?`<a class="btn btn2" style="text-align:center;text-decoration:none" href="${waLink(m,ym)}" target="_blank" rel="noopener">Ingatkan lewat WhatsApp</a>`:''}
+  <button class="btn2" onclick="closeSheet()">Tutup</button>
+ </div>`);
+}
+function waLink(m,ym){
+ const sisa=Math.max(0,m.tarif-paidFor(m.id,ym));
+ let p=(m.hp||'').replace(/\D/g,'');
+ if(p.startsWith('0'))p='62'+p.slice(1);else if(p.startsWith('8'))p='62'+p;
+ const msg=`Assalamu'alaikum Bapak/Ibu. Kami dari ${db.lembaga}. Kami ingin menyampaikan dengan hormat bahwa iuran ${namaBulan(ym)} untuk ananda ${m.nama} masih tersisa ${rp(sisa)}. Kalau sudah ditransfer, mohon kabari kami ya. Kalau ada kendala, silakan sampaikan saja, kita cari jalan terbaik bersama. Jazakumullahu khairan.`;
+ return 'https://wa.me/'+p+'?text='+encodeURIComponent(msg);
+}
+
+/* ---------- impor murid ---------- */
+function formImpor(){
+ openSheet(`<h2>Impor daftar murid</h2>
+ <p class="mut" style="margin-top:-6px">Tempel nama murid, satu murid per baris. Boleh dari Excel, WhatsApp, atau file CSV. Kalau ingin lengkap, urutannya: Nama, Program, Iuran per bulan, Nomor WhatsApp wali (dipisah koma, titik koma, atau tab). Yang wajib hanya nama.</p>
+ <label class="btn btn2" style="text-align:center;margin:0 0 8px;display:block">Pilih file CSV atau teks<input type="file" accept=".csv,.txt,text/csv,text/plain" style="display:none" onchange="bacaFileImpor(this)"></label>
+ <textarea id="imp_txt" rows="7" placeholder="Aisyah, Tahfidz, 150000, 08123456789&#10;Zahra, Calistung, 120000&#10;Fatimah" oninput="prevImpor()"></textarea>
+ <label>Iuran per bulan untuk baris yang tidak mencantumkan iuran (Rp)</label>
+ <input id="imp_tarif" inputmode="numeric" value="${fmtNum(db.tarifDefault||0)}" oninput="fmtInput(this);prevImpor()">
+ <p id="imp_prev" class="mut" style="margin:10px 0"></p>
+ <div style="display:grid;gap:8px"><button onclick="doImpor()">Impor</button><button class="btn2" onclick="unduhContoh()">Unduh file contoh</button><button class="btn2" onclick="closeSheet()">Batal</button></div>`);
+ prevImpor();
+}
+function bacaFileImpor(inp){
+ const f=inp.files[0];if(!f)return;
+ const r=new FileReader();r.onload=()=>{$('#imp_txt').value=String(r.result).replace(/^﻿/,'');prevImpor();};r.readAsText(f);inp.value='';
+}
+function parseImpor(){
+ const dt=num($('#imp_tarif').value);
+ const lines=$('#imp_txt').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const ada=new Set(db.murid.map(m=>m.nama.trim().toLowerCase()));
+ const baru=[],lewat=[];
+ lines.forEach((ln,i)=>{
+  const p=ln.split(/[\t;,]/).map(x=>x.trim());
+  if(i===0&&/^nama/i.test(p[0]))return;
+  const nama=p[0];if(!nama)return;
+  if(ada.has(nama.toLowerCase())){lewat.push(nama);return;}
+  ada.add(nama.toLowerCase());
+  baru.push({nama,program:p[1]||'',tarif:num(p[2])||dt,hp:p[3]||''});
+ });
+ return {baru,lewat,dt};
+}
+function prevImpor(){
+ const {baru,lewat}=parseImpor();
+ $('#imp_prev').innerHTML=baru.length?`Akan ditambahkan <b>${baru.length}</b> murid.`+(lewat.length?` ${lewat.length} nama dilewati karena sudah ada.`:''):(lewat.length?'Semua nama sudah ada di daftar.':'Belum ada nama yang terbaca.');
+}
+function doImpor(){
+ const {baru,dt}=parseImpor();
+ if(!baru.length)return toast('Belum ada nama yang bisa diimpor');
+ baru.forEach(b=>db.murid.push({id:uid(),nama:b.nama,program:b.program,tarif:b.tarif,hp:b.hp,mulai:thisMonth(),aktif:true}));
+ db.tarifDefault=dt;save();closeSheet();render();toast(baru.length+' murid ditambahkan');
+}
+function unduhContoh(){
+ const rows=['Nama,Program,Iuran per bulan,WhatsApp wali','Aisyah,Tahfidz,150000,08123456789','Zahra,Calistung,120000,','Fatimah,Fun Holiday,100000,'];
+ download('﻿'+rows.join('\r\n'),'text/csv;charset=utf-8','daftar-murid-contoh.csv');
+}
+
+/* ---------- tampilan: murid ---------- */
+function vMurid(){
+ const list=db.murid.slice().sort((a,b)=>(b.aktif-a.aktif)||a.nama.localeCompare(b.nama));
+ return `<div class="grid2"><button onclick="formMurid()">+ Tambah murid</button><button class="btn2" onclick="formImpor()">Impor daftar</button></div><div style="height:12px"></div>
+ <div class="card">${list.length?list.map(m=>`<div class="item" onclick="formMurid('${m.id}')"><div class="grow"><div>${esc(m.nama)}</div><div class="mut">${esc(m.program||'-')} &middot; ${rp(m.tarif)} per bulan</div></div>${m.aktif?'':'<span class="badge b-off">Nonaktif</span>'}</div>`).join('')
+ :'<div class="empty">Belum ada murid. Tekan Tambah murid, atau Impor daftar kalau namanya sudah ada di file.</div>'}</div>`;
+}
+function formMurid(id){
+ const m=id?db.murid.find(x=>x.id===id):{id:'',nama:'',program:'',tarif:0,hp:'',mulai:thisMonth(),aktif:true};
+ const dipakai=id&&db.trx.some(t=>t.muridId===id);
+ openSheet(`<h2>${id?'Ubah data murid':'Tambah murid'}</h2>
+ <label>Nama murid</label><input id="m_nama" value="${esc(m.nama)}">
+ <label>Program atau kelas (boleh dikosongkan)</label><input id="m_prog" value="${esc(m.program)}" placeholder="Contoh: Calistung, Tahfidz, Kelas 3">
+ <label>Iuran per bulan (Rp)</label><input id="m_tarif" inputmode="numeric" value="${fmtNum(m.tarif)}" oninput="fmtInput(this)">
+ <label>Nomor WhatsApp wali (boleh dikosongkan)</label><input id="m_hp" inputmode="tel" value="${esc(m.hp)}" placeholder="08xxxxxxxxxx">
+ <label>Mulai iuran dari bulan</label><input id="m_mulai" type="month" value="${m.mulai||thisMonth()}">
+ <label class="row" style="margin-top:14px"><input type="checkbox" id="m_aktif" ${m.aktif?'checked':''}> Murid masih aktif</label>
+ <p class="mut">Catatan: kalau iuran diubah, perubahan berlaku untuk semua bulan, termasuk status lunas bulan-bulan lalu.</p>
+ <div style="display:grid;gap:8px;margin-top:8px">
+  <button onclick="saveMurid('${id||''}')">Simpan</button>
+  ${id&&!dipakai?`<button class="btnr" onclick="delMurid('${id}')">Hapus murid</button>`:''}
+  ${id&&dipakai?'<p class="mut">Murid ini sudah punya catatan pembayaran, jadi tidak bisa dihapus. Hilangkan centang aktif kalau sudah berhenti.</p>':''}
+  <button class="btn2" onclick="closeSheet()">Batal</button>
+ </div>`);
+}
+function saveMurid(id){
+ const nama=$('#m_nama').value.trim();
+ if(!nama)return toast('Nama murid belum diisi');
+ const tarif=num($('#m_tarif').value);
+ const aktif=$('#m_aktif').checked;
+ let m=id?db.murid.find(x=>x.id===id):null;
+ const isNew=!m;
+ if(isNew){m={id:uid()};db.murid.push(m);}
+ const wasActive=isNew?true:m.aktif;
+ Object.assign(m,{nama,program:$('#m_prog').value.trim(),tarif,hp:$('#m_hp').value.trim(),mulai:$('#m_mulai').value||thisMonth(),aktif});
+ if(!aktif&&wasActive)m.berhenti=thisMonth();
+ if(aktif)delete m.berhenti;
+ save();closeSheet();render();toast('Tersimpan');
+}
+function delMurid(id){
+ if(!confirm('Hapus murid ini?'))return;
+ db.murid=db.murid.filter(m=>m.id!==id);save();closeSheet();render();
+}
+
+/* ---------- transaksi ---------- */
+let F={};
+function fmtInput(el){const n=num(el.value);el.value=fmtNum(n);}
+function openTrx(id,pre){
+ const t=id?db.trx.find(x=>x.id===id):null;
+ F=t?Object.assign({},t):Object.assign({id:'',tipe:'masuk',tgl:today(),kategori:IURAN,jumlah:0,ket:'',muridId:'',bulan:thisMonth()},pre||{});
+ drawTrx();
+}
+function syncF(){
+ const g=i=>document.getElementById(i);
+ if(!g('f_tgl'))return;
+ F.tgl=g('f_tgl').value;F.kategori=g('f_kat').value;F.jumlah=num(g('f_jml').value);F.ket=g('f_ket').value;
+ if(g('f_murid')){F.muridId=g('f_murid').value;F.bulan=g('f_bln').value||thisMonth();}
+}
+function setTipe(t){syncF();F.tipe=t;F.kategori=(t==='masuk'?db.katMasuk:db.katKeluar)[0];drawTrx();}
+function onKat(){syncF();drawTrx();}
+function onMurid(){
+ syncF();
+ const m=db.murid.find(x=>x.id===F.muridId);
+ if(m&&!F.id)F.jumlah=Math.max(0,m.tarif-paidFor(m.id,F.bulan))||m.tarif;
+ drawTrx();
+}
+function drawTrx(){
+ let kats=(F.tipe==='masuk'?db.katMasuk:db.katKeluar).slice();
+ if(!kats.includes(F.kategori))kats.push(F.kategori);
+ const iur=F.tipe==='masuk'&&F.kategori===IURAN;
+ const murid=db.murid.filter(m=>m.aktif||m.id===F.muridId).sort((a,b)=>a.nama.localeCompare(b.nama));
+ openSheet(`<h2>${F.id?'Ubah transaksi':'Catat transaksi'}</h2>
+ <div class="seg"><button class="${F.tipe==='masuk'?'on m':''}" onclick="setTipe('masuk')">Uang masuk</button><button class="${F.tipe==='keluar'?'on k':''}" onclick="setTipe('keluar')">Uang keluar</button></div>
+ <label>Tanggal</label><input type="date" id="f_tgl" value="${F.tgl}">
+ <label>Kategori</label><select id="f_kat" onchange="onKat()">${kats.map(k=>`<option ${k===F.kategori?'selected':''}>${esc(k)}</option>`).join('')}</select>
+ ${iur?`<label>Nama murid</label><select id="f_murid" onchange="onMurid()"><option value="">Pilih murid</option>${murid.map(m=>`<option value="${m.id}" ${m.id===F.muridId?'selected':''}>${esc(m.nama)}</option>`).join('')}</select>
+ <label>Untuk iuran bulan</label><input type="month" id="f_bln" value="${F.bulan||thisMonth()}" onchange="onMurid()">`:''}
+ <label>Jumlah (Rp)</label><input id="f_jml" inputmode="numeric" value="${fmtNum(F.jumlah)}" oninput="fmtInput(this)">
+ <label>Keterangan (boleh dikosongkan)</label><input id="f_ket" value="${esc(F.ket)}" placeholder="Contoh: transfer, tunai, beli spidol">
+ <div style="display:grid;gap:8px;margin-top:14px">
+  <button onclick="saveTrx()">Simpan</button>
+  ${F.id?`<button class="btnr" onclick="delTrx('${F.id}')">Hapus transaksi</button>`:''}
+  <button class="btn2" onclick="closeSheet()">Batal</button>
+ </div>`);
+}
+function saveTrx(){
+ syncF();
+ if(!F.tgl)return toast('Tanggal belum diisi');
+ if(F.jumlah<=0)return toast('Jumlah belum diisi');
+ const iur=F.tipe==='masuk'&&F.kategori===IURAN;
+ if(iur&&!F.muridId)return toast('Pilih nama murid dulu');
+ const rec={id:F.id||uid(),tipe:F.tipe,tgl:F.tgl,kategori:F.kategori,jumlah:F.jumlah,ket:(F.ket||'').trim(),muridId:iur?F.muridId:'',bulan:iur?F.bulan:''};
+ const i=db.trx.findIndex(x=>x.id===rec.id);
+ if(i>=0)db.trx[i]=rec;else db.trx.push(rec);
+ save();closeSheet();render();toast('Tersimpan');
+}
+function delTrx(id){
+ if(!confirm('Hapus transaksi ini?'))return;
+ db.trx=db.trx.filter(t=>t.id!==id);save();closeSheet();render();toast('Terhapus');
+}
+
+/* ---------- laporan ---------- */
+function periodTrx(){return S.lapMode==='semua'?db.trx:db.trx.filter(t=>t.tgl.slice(0,7)===S.bulanLap);}
+function saldoAwalPeriode(){
+ if(S.lapMode==='semua')return db.saldoAwal;
+ const t=totals(db.trx.filter(x=>x.tgl.slice(0,7)<S.bulanLap));
+ return db.saldoAwal+t.masuk-t.keluar;
+}
+function katBlock(g,cls){
+ if(!g.length)return '<p class="mut">Tidak ada.</p>';
+ const mx=g[0][1]||1;
+ return g.map(([k,v])=>`<div style="margin:8px 0"><div class="row"><div class="grow">${esc(k)}</div><div class="${cls}">${rp(v)}</div></div><div class="bar"><i style="width:${Math.round(v/mx*100)}%"></i></div></div>`).join('');
+}
+function vLaporan(){
+ const mode=S.lapMode,ym=S.bulanLap;
+ const list=periodTrx().slice().sort(cmpAsc);
+ const tot=totals(list),awal=saldoAwalPeriode(),akhir=awal+tot.masuk-tot.keluar,selisih=tot.masuk-tot.keluar;
+ const periode=mode==='semua'?'seluruh periode pencatatan':namaBulan(ym);
+ const gm=group(list.filter(t=>t.tipe==='masuk')),gk=group(list.filter(t=>t.tipe==='keluar'));
+ let iuranHtml='';
+ if(mode==='bulan'){
+  const wm=db.murid.filter(m=>wajib(m,ym)).sort((a,b)=>a.nama.localeCompare(b.nama));
+  if(wm.length){
+   const lunas=wm.filter(m=>paidFor(m.id,ym)>=m.tarif).length;
+   iuranHtml=`<div class="card"><h2>Status iuran murid</h2><p>Dari ${wm.length} murid, ${lunas} sudah lunas pada ${namaBulan(ym)}.</p>
+   <table><tr><th>Nama</th><th class="r">Iuran</th><th class="r">Terbayar</th><th class="r">Sisa</th></tr>
+   ${wm.map(m=>{const p=paidFor(m.id,ym);return `<tr><td>${esc(m.nama)}</td><td class="r">${rp(m.tarif)}</td><td class="r">${rp(p)}</td><td class="r">${rp(Math.max(0,m.tarif-p))}</td></tr>`;}).join('')}</table></div>`;
+  }
+ }
+ return `<div class="printonly"><h2 style="font-size:18pt">Laporan Keuangan ${esc(db.lembaga)}</h2><p>Periode: ${periode}</p></div>
+ <div class="card noprint">
+  <div class="seg"><button class="${mode==='bulan'?'on':''}" onclick="S.lapMode='bulan';render()">Per bulan</button><button class="${mode==='semua'?'on':''}" onclick="S.lapMode='semua';render()">Semua waktu</button></div>
+  ${mode==='bulan'?`<input type="month" value="${ym}" onchange="S.bulanLap=this.value||thisMonth();render()">`:''}
+  <div class="grid2" style="margin-top:10px"><button onclick="window.print()">Cetak atau simpan PDF</button><button class="btn2" onclick="csv()">Unduh Excel (CSV)</button></div>
+ </div>
+ <div class="card"><h2>Ringkasan ${mode==='semua'?'keseluruhan':namaBulan(ym)}</h2>
+  <p>Pada ${periode}, ${esc(db.lembaga)} menerima kas sebesar <b>${rp(tot.masuk)}</b> dan mengeluarkan <b>${rp(tot.keluar)}</b>. ${selisih>=0?'Ada kelebihan kas sebesar':'Kas berkurang sebesar'} ${rp(Math.abs(selisih))}, sehingga saldo akhir menjadi <b>${rp(akhir)}</b>.</p>
+  <table><tr><td>Saldo awal</td><td class="r">${rp(awal)}</td></tr><tr><td>Uang masuk</td><td class="r in">${rp(tot.masuk)}</td></tr><tr><td>Uang keluar</td><td class="r out">${rp(tot.keluar)}</td></tr><tr><td><b>Saldo akhir</b></td><td class="r"><b>${rp(akhir)}</b></td></tr></table>
+ </div>
+ <div class="card"><h2>Uang masuk per kategori</h2>${katBlock(gm,'in')}</div>
+ <div class="card"><h2>Uang keluar per kategori</h2>${katBlock(gk,'out')}</div>
+ ${iuranHtml}
+ <div class="card"><h2>Daftar transaksi</h2>${list.length?list.map(trxRow).join(''):'<div class="empty">Belum ada transaksi pada periode ini.</div>'}</div>`;
+}
+function download(text,type,name){
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;
+ document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function csv(){
+ const list=periodTrx().slice().sort(cmpAsc);
+ const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+ const rows=[['Tanggal','Jenis','Kategori','Murid','Bulan iuran','Keterangan','Jumlah'].map(q).join(',')];
+ list.forEach(t=>rows.push([t.tgl,t.tipe==='masuk'?'Masuk':'Keluar',t.kategori,muridNama(t.muridId),t.bulan,t.ket,t.jumlah].map(q).join(',')));
+ download('\ufeff'+rows.join('\r\n'),'text/csv;charset=utf-8','kas-'+(S.lapMode==='semua'?'semua':S.bulanLap)+'.csv');
+}
+
+/* ---------- pengaturan ---------- */
+function vAtur(){
+ const chips=(arr,j)=>arr.map((k,i)=>`<span class="chip">${esc(k)}${k===IURAN?'':` <b onclick="delKat('${j}',${i})">&times;</b>`}</span>`).join('');
+ return `<div class="card"><h2>Data lembaga</h2>
+  <label style="margin-top:0">Nama lembaga</label><input id="a_nama" value="${esc(db.lembaga)}" onchange="db.lembaga=this.value.trim()||'Rumah Belajar Maryam';save();render()">
+  <label>Saldo awal kas (Rp)</label><input id="a_saldo" inputmode="numeric" value="${fmtNum(db.saldoAwal)}" oninput="fmtInput(this)" onchange="db.saldoAwal=num(this.value);save();toast('Tersimpan')">
+  <p class="mut">Saldo awal adalah uang kas yang sudah ada sebelum Ibu mulai mencatat di aplikasi ini.</p>
+ </div>
+ <div class="card"><h2>Kategori uang masuk</h2>${chips(db.katMasuk,'masuk')}
+  <div class="row" style="margin-top:8px"><input id="k_masuk" placeholder="Kategori baru"><button onclick="addKat('masuk')">Tambah</button></div></div>
+ <div class="card"><h2>Kategori uang keluar</h2>${chips(db.katKeluar,'keluar')}
+  <div class="row" style="margin-top:8px"><input id="k_keluar" placeholder="Kategori baru"><button onclick="addKat('keluar')">Tambah</button></div></div>
+ <div class="card"><h2>Cadangan data</h2>
+  <p class="mut">Data tersimpan di perangkat ini saja. Unduh cadangan secara berkala, lalu simpan filenya di Google Drive atau kirim ke WhatsApp sendiri.</p>
+  <p class="mut">Cadangan terakhir: ${db.lastBackup?tglIndo(db.lastBackup.slice(0,10)):'belum pernah'}</p>
+  <div style="display:grid;gap:8px"><button onclick="backup()">Unduh cadangan</button>
+  <label class="btn btn2" style="text-align:center;margin:0">Pulihkan dari file cadangan<input type="file" accept=".json,application/json" style="display:none" onchange="restore(this)"></label></div>
+ </div>
+ <div class="card"><h2>Pasang aplikasi</h2>
+  ${deferredInstall?'<button class="full" onclick="installApp()">Pasang di layar utama</button>':'<p class="mut">Di Chrome, buka menu titik tiga lalu pilih Tambahkan ke layar utama atau Pasang aplikasi. Kalau aplikasi dibuka dari ikon tersebut, tampilannya penuh seperti aplikasi biasa. Di Safari iPhone atau iPad, tekan tombol Bagikan lalu Tambahkan ke Layar Utama.</p>'}
+ </div>
+ <div class="card"><h2>Hapus semua data</h2><p class="mut">Gunakan hanya kalau benar-benar ingin mengulang dari awal.</p><button class="btnr full" onclick="wipe()">Hapus semua data</button></div>`;
+}
+function addKat(j){
+ const el=$('#k_'+j),v=el.value.trim();if(!v)return;
+ const arr=j==='masuk'?db.katMasuk:db.katKeluar;
+ if(arr.some(x=>x.toLowerCase()===v.toLowerCase()))return toast('Kategori sudah ada');
+ arr.push(v);save();render();
+}
+function delKat(j,i){
+ const arr=j==='masuk'?db.katMasuk:db.katKeluar;
+ if(!confirm('Hapus kategori "'+arr[i]+'"? Transaksi lama tetap aman.'))return;
+ arr.splice(i,1);save();render();
+}
+function backup(){
+ db.lastBackup=new Date().toISOString();save();
+ download(JSON.stringify(db,null,1),'application/json','kas-rbm-'+today()+'.json');
+ render();toast('Cadangan diunduh');
+}
+function restore(inp){
+ const f=inp.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const d=JSON.parse(r.result);
+   if(!Array.isArray(d.trx)||!Array.isArray(d.murid))throw 0;
+   if(!confirm('Data yang ada sekarang akan diganti dengan isi file cadangan. Lanjutkan?'))return;
+   db=Object.assign(clone(DEF),d);save();render();toast('Data berhasil dipulihkan');
+  }catch(e){toast('File cadangan tidak dikenali');}
+ };
+ r.readAsText(f);inp.value='';
+}
+function wipe(){
+ if(!confirm('Semua data murid dan transaksi akan dihapus. Lanjutkan?'))return;
+ if(!confirm('Yakin? Data yang sudah dihapus tidak bisa dikembalikan kecuali ada file cadangan.'))return;
+ db=clone(DEF);save();render();toast('Semua data dihapus');
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(S.tab==='atur')render();});
+function installApp(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall.userChoice.finally(()=>{deferredInstall=null;render();});}
+
+render();
+</script>
+</body>
+</html>
