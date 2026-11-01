@@ -84,11 +84,12 @@ td.r,th.r{text-align:right}
 </header>
 <main id="app"></main>
 <div id="login"></div>
-<button class="fab noprint" id="fab" onclick="openTrx()" aria-label="Catat transaksi">+</button>
+<button class="fab noprint" id="fab" onclick="fabKlik()" aria-label="Tambah catatan">+</button>
 <nav>
  <button data-t="beranda" onclick="go('beranda')"><span>🏠</span>Beranda</button>
  <button data-t="iuran" onclick="go('iuran')"><span>💰</span>Iuran</button>
  <button data-t="murid" onclick="go('murid')"><span>👥</span>Data</button>
+ <button data-t="catatan" onclick="go('catatan')"><span>📝</span>Catatan</button>
  <button data-t="laporan" onclick="go('laporan')"><span>📊</span>Laporan</button>
  <button data-t="atur" onclick="go('atur')"><span>⚙️</span>Atur</button>
 </nav>
@@ -111,8 +112,8 @@ const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capa
 const KEY='rbm_v2',KEY_OLD='rbm_keuangan_v1',KEY_SES='rbm_v2_sesi',KEY_USER='rbm_v2_user';
 const IURAN='Iuran bulanan',HONOR='Honor guru';
 const BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-const KOLEKSI=['murid','guru','trx','set'];
-const ALLOW={admin:['murid','guru','trx','set'],pengisi:['murid','guru','trx'],pelihat:[]};
+const KOLEKSI=['murid','guru','trx','set','cat'];
+const ALLOW={admin:['murid','guru','trx','set','cat'],pengisi:['murid','trx','cat'],guru:['cat'],pelihat:[]};
 const DEFSET={lembaga:'Rumah Belajar Maryam',saldoAwal:0,tarifDefault:0,
  katMasuk:[IURAN,'Pendaftaran','Fun Holiday','Donasi','Lainnya'],
  katKeluar:[HONOR,'Listrik dan air','Alat belajar','Konsumsi kegiatan','Sewa dan perawatan','Lainnya']};
@@ -141,10 +142,10 @@ const jamTgl=ms=>{const d=new Date(ms);return d.getDate()+' '+BULAN[d.getMonth()
 const num=v=>+(String(v==null?'':v).replace(/\D/g,''))||0;
 const sum=(a,f)=>a.reduce((x,y)=>x+f(y),0);
 const fmtNum=n=>n?new Intl.NumberFormat('id-ID').format(n):'';
-const labelPeran=p=>({admin:'Admin',pengisi:'Pengisi',pelihat:'Hanya melihat'}[p]||p);
+const labelPeran=p=>({admin:'Admin',pengisi:'Pengisi',guru:'Guru',pelihat:'Hanya melihat'}[p]||p);
 
 /* ---------- data: setiap catatan punya id, waktu ubah (upd), dan tanda hapus (del) ---------- */
-const emptyDB=()=>({v:2,recs:{murid:{},guru:{},trx:{},set:{}},dirty:{},hist:[],logQ:[],cur:0,sid:'',lastSync:0,lastBackup:''});
+const emptyDB=()=>({v:2,recs:{murid:{},guru:{},trx:{},set:{},cat:{}},dirty:{},hist:[],logQ:[],cur:0,sid:'',lastSync:0,lastBackup:''});
 let DB=loadDB();
 let ver=0,_ix=null,curBatch=null;
 function touch(){ver++;_ix=null;}
@@ -224,12 +225,12 @@ function putRaw(c,id,rec){
 let SES=null;
 try{SES=JSON.parse(lsGet(KEY_SES));}catch(e){}
 function peran(){return ONLINE?(SES?SES.peran:''):'admin';}
-function can(a){const p=peran();if(a==='admin')return p==='admin';if(a==='tulis')return p==='admin'||p==='pengisi';return !!p;}
+function can(a){const p=peran();if(a==='admin')return p==='admin';if(a==='tulis')return p==='admin'||p==='pengisi';if(a==='catat')return p==='admin'||p==='pengisi'||p==='guru';return !!p;}
 function deny(){toast('Akun ini hanya bisa melihat data');return false;}
 
 /* ---------- riwayat dan batalkan ---------- */
 function act(label,fn){
- if(!can('tulis'))return deny();
+ if(!can('tulis')&&!can('catat'))return deny();
  const ops=[];curBatch=ops;let err=null;
  try{fn();}catch(e){err=e;}finally{curBatch=null;}
  if(err){console.error(err);toast('Gagal: '+err.message);return false;}
@@ -250,7 +251,7 @@ function done(label,fn,msg){
 }
 function undoLast(){const h=DB.hist[DB.hist.length-1];if(h)undoEntry(h.id);}
 function undoEntry(id){
- if(!can('tulis'))return deny();
+ if(!can('tulis')&&!can('catat'))return deny();
  const i=DB.hist.findIndex(h=>h.id===id);const h=DB.hist[i];if(!h)return;
  const berubah=h.ops.some(o=>{const c=DB.recs[o.k][o.id];return c&&o.a&&c.upd!==o.a.upd;});
  if(berubah&&!confirm('Data ini sudah diubah lagi setelah kegiatan itu (mungkin oleh orang lain). Tetap kembalikan ke keadaan sebelumnya?'))return;
@@ -266,7 +267,7 @@ function undoEntry(id){
 function updUndo(){
  const h=DB.hist[DB.hist.length-1];
  const b=$('#btnUndo');if(!b)return;
- b.disabled=!h||!can('tulis');
+ b.disabled=!h||(!can('tulis')&&!can('catat'));
  b.title=h?'Batalkan: '+h.x:'';
  $('#lastAct').textContent=h?'Terakhir: '+h.x:'';
 }
@@ -458,18 +459,23 @@ function keluar(){
 }
 
 /* ---------- navigasi ---------- */
-const S={tab:'beranda',bulanIuran:thisMonth(),bulanLap:thisMonth(),lapMode:'bulan',tglTerima:today(),dataTab:'murid',bulanGuru:thisMonth()};
+const S={tab:'beranda',bulanCat:thisMonth(),catMurid:'',bulanIuran:thisMonth(),bulanLap:thisMonth(),lapMode:'bulan',tglTerima:today(),dataTab:'murid',bulanGuru:thisMonth()};
 let lastBatch=[];
+function fabKlik(){if(S.tab==='catatan')formCat();else openTrx();}
 function go(t){if((t==='iuran'||t==='murid')&&S.tab!==t)S.tglTerima=today();S.tab=t;render();window.scrollTo(0,0);}
 function render(){
  if(ONLINE&&!SES){showLogin();return;}
  $('#login').classList.remove('on');
  $('#title').textContent=SET().lembaga||'Kas';
  $('#sub').textContent=ONLINE?SES.nama+' ('+labelPeran(SES.peran)+')':'Mode di perangkat ini saja';
- const views={beranda:vBeranda,iuran:vIuran,murid:vMurid,laporan:vLaporan,atur:vAtur};
+ if(peran()==='guru'&&S.tab!=='catatan'&&S.tab!=='atur')S.tab='catatan';
+ if(!can('admin')&&S.tab==='laporan')S.tab='beranda';
+ if(!can('admin')&&S.dataTab==='guru')S.dataTab='murid';
+ const views={beranda:vBeranda,iuran:vIuran,murid:vMurid,catatan:vCatatan,laporan:vLaporan,atur:vAtur};
  $('#app').innerHTML=views[S.tab]();
- document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
- $('#fab').style.display=(S.tab==='atur'||!can('tulis'))?'none':'block';
+ const guruSaja=peran()==='guru';
+ document.querySelectorAll('nav button').forEach(b=>{b.classList.toggle('on',b.dataset.t===S.tab);b.style.display=((guruSaja&&b.dataset.t!=='catatan'&&b.dataset.t!=='atur')||(!can('admin')&&b.dataset.t==='laporan'))?'none':'';});
+ $('#fab').style.display=S.tab==='atur'?'none':(S.tab==='catatan'?can('catat'):can('tulis'))?'block':'none';
  updUndo();updStat();
 }
 
@@ -517,14 +523,14 @@ function vBeranda(){
  }
  const gl=guruAll().filter(g=>g.aktif!==false);
  const gSudah=gl.filter(g=>statusGaji(g,ym).k==='ok').length;
- const guruCard=gl.length&&can('tulis')?`<div class="card"><h2>Honor guru ${namaBulan(ym)}</h2><p style="margin:0 0 10px">${gSudah} dari ${gl.length} guru sudah dibayar. Honor yang sudah keluar bulan ini ${rp(sum(gl,g=>paidGuru(g.id,ym)))}.</p><button class="btn2 full" onclick="S.dataTab='guru';S.bulanGuru=thisMonth();go('murid')">Bayar honor guru</button></div>`:'';
+ const guruCard=gl.length&&can('admin')?`<div class="card"><h2>Honor guru ${namaBulan(ym)}</h2><p style="margin:0 0 10px">${gSudah} dari ${gl.length} guru sudah dibayar. Honor yang sudah keluar bulan ini ${rp(sum(gl,g=>paidGuru(g.id,ym)))}.</p><button class="btn2 full" onclick="S.dataTab='guru';S.bulanGuru=thisMonth();go('murid')">Bayar honor guru</button></div>`:'';
  const recent=ix().trx.slice().sort(cmpDesc).slice(0,6);
  return `${ban}
- <div class="card"><div class="mut">Saldo kas saat ini</div><div class="big">${rp(saldo)}</div></div>
+ ${can('admin')?`<div class="card"><div class="mut">Saldo kas saat ini</div><div class="big">${rp(saldo)}</div></div>
  <div class="grid2">
   <div class="card"><div class="mut">Masuk ${namaBulan(ym)}</div><div class="in" style="font-size:19px">${rp(bln.masuk)}</div></div>
   <div class="card"><div class="mut">Keluar ${namaBulan(ym)}</div><div class="out" style="font-size:19px">${rp(bln.keluar)}</div></div>
- </div>
+ </div>`:''}
  <div class="card"><h2>Iuran ${namaBulan(ym)}</h2>
   ${wm.length?`<div class="row"><div class="grow">Terkumpul ${rp(kumpul)} dari ${rp(target)}</div><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
   <p class="mut" style="margin:8px 0 10px">${belum?belum+' murid belum lunas bulan ini.':'Semua murid sudah lunas bulan ini. Alhamdulillah.'}</p>
@@ -621,6 +627,7 @@ function saveBanyak(id){
 
 /* ---------- data: murid dan guru ---------- */
 function dataSeg(){
+ if(!can('admin'))return '';
  return `<div class="seg"><button class="${S.dataTab==='murid'?'on':''}" onclick="S.dataTab='murid';render()">Murid (${muridAll().length})</button><button class="${S.dataTab==='guru'?'on':''}" onclick="S.dataTab='guru';render()">Guru (${guruAll().length})</button></div>`;
 }
 function vMurid(){return dataSeg()+(S.dataTab==='guru'?vGuru():vMuridList());}
@@ -853,7 +860,8 @@ function syncF(){
  if(g('f_murid')){F.muridId=g('f_murid').value;F.bulan=g('f_bln').value||thisMonth();}
  if(g('f_guru')){F.guruId=g('f_guru').value;F.bulan=g('f_gbln').value||thisMonth();}
 }
-function setTipe(t){syncF();F.tipe=t;F.kategori=(t==='masuk'?SET().katMasuk:SET().katKeluar)[0];drawTrx();}
+const katKel=()=>SET().katKeluar.filter(k=>can('admin')||k!==HONOR);
+function setTipe(t){syncF();F.tipe=t;F.kategori=(t==='masuk'?SET().katMasuk:katKel())[0];drawTrx();}
 function onKat(){syncF();drawTrx();}
 function onMurid(){
  syncF();
@@ -868,7 +876,7 @@ function onGuru(){
  drawTrx();
 }
 function drawTrx(){
- let kats=(F.tipe==='masuk'?SET().katMasuk:SET().katKeluar).slice();
+ let kats=(F.tipe==='masuk'?SET().katMasuk:katKel()).slice();
  if(!kats.includes(F.kategori))kats.push(F.kategori);
  const iur=F.tipe==='masuk'&&F.kategori===IURAN,hon=F.tipe==='keluar'&&F.kategori===HONOR;
  const murid=muridAll().filter(m=>m.aktif||m.id===F.muridId).sort((a,b)=>a.nama.localeCompare(b.nama));
@@ -982,6 +990,179 @@ function csv(){
  download('﻿'+rows.join('\r\n'),'text/csv;charset=utf-8','kas-'+(S.lapMode==='semua'?'semua':S.bulanLap)+'.csv');
 }
 
+
+/* ---------- catatan belajar ---------- */
+const catAll=()=>live('cat');
+function bolehUbahCat(c){const p=peran();return p==='admin'||p==='pengisi'||(p==='guru'&&c.oleh===SES.u);}
+function muridAktifUrut(){return muridAll().filter(m=>m.aktif).sort((a,b)=>a.nama.localeCompare(b.nama));}
+function vCatatan(){
+ const ym=S.bulanCat,mid=S.catMurid;
+ const ms=muridAktifUrut();
+ if(mid&&!DB.recs.murid[mid])S.catMurid='';
+ let list=catAll().filter(c=>(c.tgl||'').slice(0,7)===ym&&(!S.catMurid||c.muridId===S.catMurid));
+ list.sort((a,b)=>(b.tgl||'').localeCompare(a.tgl||'')||b.id.localeCompare(a.id));
+ const baris=c=>`<div class="item" onclick="detailCat('${c.id}')"><div class="grow"><div><b>${esc(muridNama(c.muridId)||'Murid dihapus')}</b> &middot; ${tglIndo(c.tgl)}</div><div class="mut">${esc((c.materi||'').slice(0,90))}${(c.materi||'').length>90?'...':''}</div><div class="mut">Guru: ${esc(c.olehNama||c.oleh||'-')}</div></div><span class="mut">&#8250;</span></div>`;
+ return `<div class="card"><div class="grid2"><div><label style="margin-top:0">Bulan</label><input type="month" value="${ym}" onchange="S.bulanCat=this.value||thisMonth();render()"></div>
+ <div><label style="margin-top:0">Murid</label><select onchange="S.catMurid=this.value;render()"><option value="">Semua murid</option>${ms.map(m=>`<option value="${m.id}" ${m.id===S.catMurid?'selected':''}>${esc(m.nama)}</option>`).join('')}</select></div></div>
+ ${can('catat')?`<div class="grid2" style="margin-top:12px"><button onclick="formCatMassal()">Isi catatan massal</button><button class="btn2" onclick="formWAMassal()">Kirim WA massal</button></div>`:''}
+ ${S.catMurid&&list.length?`<button class="btn2 full" style="margin-top:8px" onclick="kirimWA('${S.catMurid}','${ym}')">Kirim rekap ${namaBulan(ym)} murid ini ke WA</button>`:''}</div>
+ <div class="card"><h2>${list.length} catatan</h2>${list.length?list.map(baris).join(''):'<div class="empty">Belum ada catatan di bulan ini.'+(can('catat')?' Tekan tombol + untuk menambah catatan pertemuan.':'')+'</div>'}</div>`;
+}
+function formCat(id,pre){
+ if(!can('catat'))return deny();
+ const c=id?getRec('cat',id):Object.assign({id:'',muridId:S.catMurid||'',tgl:today(),materi:'',kembang:''},pre||{});
+ if(!c)return;
+ if(id&&!bolehUbahCat(c))return deny();
+ const ms=muridAktifUrut();
+ if(!ms.length&&!id)return toast('Belum ada murid. Minta admin menambahkan murid dulu.');
+ openSheet(`<h2>${id?'Ubah catatan':'Catatan pertemuan'}</h2>
+ <label>Murid</label><select id="c_m">${(id&&!ms.some(m=>m.id===c.muridId)&&DB.recs.murid[c.muridId]?[DB.recs.murid[c.muridId]].concat(ms):ms).map(m=>`<option value="${m.id}" ${m.id===c.muridId?'selected':''}>${esc(m.nama)}${m.kelas?' (kelas '+esc(m.kelas)+')':''}</option>`).join('')}</select>
+ <label>Tanggal</label><input id="c_t" type="date" value="${c.tgl}">
+ <label>Materi</label><textarea id="c_a" rows="3" placeholder="Contoh: Perkalian 6 dan 7">${esc(c.materi)}</textarea>
+ <label>Perkembangan</label><textarea id="c_b" rows="4" placeholder="Contoh: Sudah hafal perkalian 6, perlu latihan untuk 7">${esc(c.kembang)}</textarea>
+ <div style="display:grid;gap:8px;margin-top:14px"><button onclick="saveCat('${id||''}')">Simpan</button>${id?`<button class="btnr" onclick="hapusCat('${id}')">Hapus catatan</button>`:''}<button class="btn2" onclick="${id?`detailCat('${id}')`:'closeSheet()'}">Batal</button></div>`);
+}
+function saveCat(id){
+ const muridId=$('#c_m').value,tgl=$('#c_t').value,materi=$('#c_a').value.trim(),kembang=$('#c_b').value.trim();
+ if(!muridId)return toast('Pilih murid dulu');
+ if(!tgl)return toast('Isi tanggal dulu');
+ if(!materi&&!kembang)return toast('Isi materi atau perkembangan');
+ const nama=muridNama(muridId);
+ const lama=id?getRec('cat',id):null;
+ const o=lama?{id,muridId,tgl,materi,kembang}:{muridId,tgl,materi,kembang,oleh:ONLINE?SES.u:'admin',olehNama:ONLINE?SES.nama:(SET().lembaga||'Guru')};
+ if(id)o.id=id;
+ if(done((id?'Mengubah':'Mencatat')+' catatan belajar '+nama,()=>putRec('cat',o),'Catatan tersimpan')){S.bulanCat=tgl.slice(0,7);if(S.tab==='catatan')render();}
+}
+function hapusCat(id){
+ const c=getRec('cat',id);if(!c||!bolehUbahCat(c))return deny();
+ if(!confirm('Hapus catatan ini?'))return;
+ done('Menghapus catatan belajar '+muridNama(c.muridId),()=>delRec('cat',id),'Catatan dihapus');
+}
+function detailCat(id){
+ const c=getRec('cat',id);if(!c)return closeSheet();
+ const m=DB.recs.murid[c.muridId];
+ openSheet(`<h2>${esc(m?m.nama:'Murid dihapus')}</h2>
+ <p class="mut" style="margin-top:-6px">${tglIndo(c.tgl)} &middot; Guru: ${esc(c.olehNama||c.oleh||'-')}</p>
+ <label>Materi</label><div style="white-space:pre-wrap">${esc(c.materi)||'-'}</div>
+ <label>Perkembangan</label><div style="white-space:pre-wrap">${esc(c.kembang)||'-'}</div>
+ <div style="display:grid;gap:8px;margin-top:16px">${m?`<button onclick="kirimWA('${c.muridId}','','${c.id}')">Kirim ke WA wali</button>`:''}${can('catat')&&bolehUbahCat(c)?`<button class="btn2" onclick="formCat('${c.id}')">Ubah catatan</button>`:''}<button class="btn2" onclick="closeSheet()">Tutup</button></div>`);
+}
+function nomorWA(hp){
+ let d=String(hp||'').replace(/\D/g,'');
+ if(!d)return '';
+ if(d.startsWith('00'))d=d.slice(2);
+ if(d.startsWith('0'))d='62'+d.slice(1);
+ else if(d.startsWith('8'))d='62'+d;
+ return d.length>=9?d:'';
+}
+function teksLaporan(m,list){
+ const lem=SET().lembaga||'Rumah Belajar Maryam';
+ const isi=list.map(c=>`Tanggal: ${tglIndo(c.tgl)}\nMateri: ${c.materi||'-'}\nPerkembangan: ${c.kembang||'-'}`+(list.length>1?'':`\nGuru: ${c.olehNama||c.oleh||'-'}`)).join('\n\n');
+ return `Assalamualaikum Bapak/Ibu, wali dari ${m.nama}.\nBerikut laporan belajar ${m.nama} di ${lem}:\n\n${isi}\n\nTerima kasih atas perhatian dan dukungannya.\n${lem}`;
+}
+function kirimWA(muridId,ym,catId){
+ const m=DB.recs.murid[muridId];if(!m)return;
+ const list=catId?[getRec('cat',catId)].filter(Boolean):catAll().filter(c=>c.muridId===muridId&&(c.tgl||'').slice(0,7)===ym).sort((a,b)=>(a.tgl||'').localeCompare(b.tgl||''));
+ if(!list.length)return toast('Belum ada catatan untuk dikirim');
+ const teks=teksLaporan(m,list),no=nomorWA(m.hp);
+ openSheet(`<h2>Kirim ke WA wali</h2>
+ <p class="mut" style="margin-top:-6px">${esc(m.nama)} &middot; ${no?'WA '+esc(m.hp):'Nomor WA wali belum diisi, kontaknya dipilih sendiri di WhatsApp'}</p>
+ <label>Pesan (boleh diubah dulu)</label><textarea id="wa_t" rows="10">${esc(teks)}</textarea>
+ <div style="display:grid;gap:8px;margin-top:14px"><button onclick="bukaWA('${no}')">Buka WhatsApp</button><button class="btn2" onclick="salinWA()">Salin pesan</button><button class="btn2" onclick="closeSheet()">Tutup</button></div>`);
+}
+function bukaWA(no){
+ const t=$('#wa_t').value;
+ const url='https://wa.me/'+no+'?text='+encodeURIComponent(t);
+ const w=window.open(url,'_blank');
+ if(!w)location.href=url;
+}
+async function salinWA(){
+ const el=$('#wa_t');
+ try{await navigator.clipboard.writeText(el.value);toast('Pesan disalin');}
+ catch(e){el.select();try{document.execCommand('copy');toast('Pesan disalin');}catch(_){toast('Tekan lama pada pesan lalu pilih Salin');}}
+}
+
+/* ---------- catatan massal ---------- */
+let CM={tgl:'',materi:'',prog:'',rows:{}};
+function programList(){return [...new Set(muridAktifUrut().map(m=>(m.program||'').trim()).filter(Boolean))].sort();}
+function syncCM(){
+ const g=i=>document.getElementById(i);if(!g('cm_t'))return;
+ CM.tgl=g('cm_t').value;CM.materi=g('cm_a').value;
+ document.querySelectorAll('[data-cm]').forEach(r=>{const id=r.dataset.cm;CM.rows[id]={on:r.querySelector('input[type=checkbox]').checked,k:r.querySelector('textarea').value};});
+}
+function formCatMassal(){
+ if(!can('catat'))return deny();
+ if(!muridAktifUrut().length)return toast('Belum ada murid. Minta admin menambahkan murid dulu.');
+ CM={tgl:today(),materi:'',prog:'',rows:{}};drawCM();
+}
+function drawCM(){
+ const progs=programList();
+ const ms=muridAktifUrut().filter(m=>!CM.prog||(m.program||'').trim()===CM.prog);
+ const adaHariIni=m=>catAll().some(c=>c.muridId===m.id&&c.tgl===CM.tgl);
+ const dipilih=ms.filter(m=>(CM.rows[m.id]||{}).on).length;
+ openSheet(`<h2>Catatan massal</h2>
+ <p class="mut" style="margin-top:-6px">Satu pertemuan untuk banyak murid. Isi materi sekali, lalu perkembangan tiap murid.</p>
+ <label>Tanggal</label><input id="cm_t" type="date" value="${CM.tgl}" onchange="syncCM();drawCM()">
+ <label>Materi (sama untuk semua yang dipilih)</label><textarea id="cm_a" rows="2" placeholder="Contoh: Perkalian 6 dan 7">${esc(CM.materi)}</textarea>
+ ${progs.length>1?`<label>Tampilkan program</label><select onchange="syncCM();CM.prog=this.value;drawCM()"><option value="">Semua program</option>${progs.map(x=>`<option ${x===CM.prog?'selected':''}>${esc(x)}</option>`).join('')}</select>`:''}
+ <div class="row" style="margin:12px 0 4px"><div class="grow mut">${dipilih} murid dipilih</div><button class="btn2" onclick="cmSemua(true)">Pilih semua</button><button class="btn2" onclick="cmSemua(false)">Kosongkan</button></div>
+ <div style="max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:0 10px">
+ ${ms.map(m=>{const r=CM.rows[m.id]||{on:false,k:''};return `<div data-cm="${m.id}" style="padding:10px 0;border-bottom:1px solid var(--line)"><label class="row" style="margin:0 0 6px;color:inherit"><input type="checkbox" style="width:auto" ${r.on?'checked':''}> <b>${esc(m.nama)}</b>${m.kelas?' <span class="mut">kelas '+esc(m.kelas)+'</span>':''}${adaHariIni(m)?' <span class="badge b-off">sudah ada hari ini</span>':''}</label><textarea rows="2" placeholder="Perkembangan ${esc(m.nama)}" oninput="if(this.value)this.parentNode.querySelector('input').checked=true">${esc(r.k)}</textarea></div>`;}).join('')}
+ </div>
+ <div style="display:grid;gap:8px;margin-top:14px"><button onclick="saveCM()">Simpan catatan</button><button class="btn2" onclick="closeSheet()">Batal</button></div>`);
+}
+function cmSemua(v){syncCM();muridAktifUrut().filter(m=>!CM.prog||(m.program||'').trim()===CM.prog).forEach(m=>{CM.rows[m.id]=Object.assign({k:''},CM.rows[m.id],{on:v});});drawCM();}
+function saveCM(){
+ syncCM();
+ if(!CM.tgl)return toast('Isi tanggal dulu');
+ const materi=CM.materi.trim();
+ const pilih=muridAktifUrut().filter(m=>(CM.rows[m.id]||{}).on);
+ if(!pilih.length)return toast('Pilih murid dulu');
+ if(!materi&&!pilih.some(m=>CM.rows[m.id].k.trim()))return toast('Isi materi atau perkembangan');
+ const oleh=ONLINE?SES.u:'admin',olehNama=ONLINE?SES.nama:(SET().lembaga||'Guru');
+ if(done('Mencatat '+pilih.length+' catatan belajar sekaligus',()=>pilih.forEach(m=>putRec('cat',{muridId:m.id,tgl:CM.tgl,materi,kembang:CM.rows[m.id].k.trim(),oleh,olehNama})),pilih.length+' catatan tersimpan')){S.bulanCat=CM.tgl.slice(0,7);S.catMurid='';if(S.tab==='catatan')render();}
+}
+
+/* ---------- laporan WA massal ---------- */
+let CW={mode:'hari',tgl:'',ym:''};
+const waSent=()=>{try{return JSON.parse(lsGet('rbm_wasent')||'{}');}catch(e){return {};}};
+function waTandai(k){const o=waSent();o[k]=Date.now();const ks=Object.keys(o);if(ks.length>400)ks.sort((a,b)=>o[a]-o[b]).slice(0,ks.length-400).forEach(x=>delete o[x]);lsSet('rbm_wasent',JSON.stringify(o));}
+function formWAMassal(){
+ if(!can('catat'))return deny();
+ CW={mode:'hari',tgl:today(),ym:S.bulanCat};drawWA();
+}
+function waItems(){
+ const sent=waSent();
+ const dalam=c=>CW.mode==='hari'?c.tgl===CW.tgl:(c.tgl||'').slice(0,7)===CW.ym;
+ const per={};
+ catAll().filter(dalam).forEach(c=>{(per[c.muridId]=per[c.muridId]||[]).push(c);});
+ return Object.keys(per).filter(id=>DB.recs.murid[id]).map(id=>{
+  const list=per[id].sort((a,b)=>(a.tgl||'').localeCompare(b.tgl||'')||a.id.localeCompare(b.id));
+  const key=id+'|'+list.map(c=>c.id+':'+c.upd).join(',');
+  return {m:DB.recs.murid[id],list,key,sudah:!!sent[key],no:nomorWA(DB.recs.murid[id].hp)};
+ }).sort((a,b)=>(a.sudah-b.sudah)||a.m.nama.localeCompare(b.m.nama));
+}
+function drawWA(){
+ const it=waItems(),belum=it.filter(x=>!x.sudah).length;
+ openSheet(`<h2>Kirim laporan WA massal</h2>
+ <p class="mut" style="margin-top:-6px">WhatsApp dibuka satu murid per satu. Setelah menekan Kirim di WhatsApp, kembali ke aplikasi ini lalu lanjut ke murid berikutnya.</p>
+ <div class="seg"><button class="${CW.mode==='hari'?'on':''}" onclick="CW.mode='hari';drawWA()">Satu tanggal</button><button class="${CW.mode==='bulan'?'on':''}" onclick="CW.mode='bulan';drawWA()">Satu bulan</button></div>
+ ${CW.mode==='hari'?`<label>Tanggal</label><input type="date" value="${CW.tgl}" onchange="CW.tgl=this.value||today();drawWA()">`:`<label>Bulan</label><input type="month" value="${CW.ym}" onchange="CW.ym=this.value||thisMonth();drawWA()">`}
+ <p style="margin:12px 0 4px"><b>${it.length}</b> murid punya catatan, <b>${belum}</b> belum dikirim.</p>
+ <div style="max-height:46vh;overflow:auto">
+ ${it.length?it.map((x,i)=>`<div class="item" style="cursor:default"><div class="grow"><div>${x.sudah?'&#10003; ':''}${esc(x.m.nama)}</div><div class="mut">${x.list.length} catatan &middot; ${x.no?'WA '+esc(x.m.hp):'nomor belum diisi, pilih kontak sendiri'}</div></div><button class="${x.sudah?'btn2':''}" onclick="waKirimSatu(${i})">${x.sudah?'Kirim lagi':'Kirim'}</button></div>`).join(''):'<div class="empty">Tidak ada catatan pada pilihan ini.</div>'}
+ </div>
+ <button class="btn2 full" style="margin-top:12px" onclick="closeSheet()">Tutup</button>`);
+}
+function waKirimSatu(i){
+ const x=waItems()[i];if(!x)return;
+ waTandai(x.key);
+ const url='https://wa.me/'+x.no+'?text='+encodeURIComponent(teksLaporan(x.m,x.list));
+ const w=window.open(url,'_blank');
+ if(!w)location.href=url;
+ setTimeout(drawWA,300);
+}
+
 /* ---------- pengaturan ---------- */
 function saveSet(label,patch){
  if(!can('admin'))return deny();
@@ -991,7 +1172,7 @@ function vAtur(){
  const s=SET(),adm=can('admin'),W=can('tulis');
  const chips=(arr,j)=>arr.map((k,i)=>`<span class="chip">${esc(k)}${(k===IURAN||k===HONOR||!adm)?'':` <b onclick="delKat('${j}',${i})">&times;</b>`}</span>`).join('');
  const akun=ONLINE?`<div class="card"><h2>Akun saya</h2><p style="margin:0 0 10px"><b>${esc(SES.nama)}</b> (${esc(SES.u)})<br><span class="mut">Peran: ${labelPeran(SES.peran)}</span></p><div class="grid2"><button class="btn2" onclick="formSandi()">Ganti kata sandi</button><button class="btnr" onclick="keluar()">Keluar</button></div></div>`:'';
- const riwayat=W?`<div class="card"><h2>Riwayat dan batalkan</h2>${DB.hist.length?`<p class="mut" style="margin:0 0 4px">Ketuk Batalkan untuk mengembalikan data seperti sebelum kegiatan itu. Tombol Batalkan di bagian atas layar membatalkan yang paling akhir.</p>`+DB.hist.slice(-15).reverse().map(h=>`<div class="item" style="cursor:default"><div class="grow"><div>${esc(h.x)}</div><div class="mut">${jamTgl(h.t)}</div></div><button class="btn2" onclick="undoEntry('${h.id}')">Batalkan</button></div>`).join(''):'<p class="mut" style="margin:0">Belum ada kegiatan yang bisa dibatalkan.</p>'}</div>`:'';
+ const riwayat=(W||can('catat'))?`<div class="card"><h2>Riwayat dan batalkan</h2>${DB.hist.length?`<p class="mut" style="margin:0 0 4px">Ketuk Batalkan untuk mengembalikan data seperti sebelum kegiatan itu. Tombol Batalkan di bagian atas layar membatalkan yang paling akhir.</p>`+DB.hist.slice(-15).reverse().map(h=>`<div class="item" style="cursor:default"><div class="grow"><div>${esc(h.x)}</div><div class="mut">${jamTgl(h.t)}</div></div><button class="btn2" onclick="undoEntry('${h.id}')">Batalkan</button></div>`).join(''):'<p class="mut" style="margin:0">Belum ada kegiatan yang bisa dibatalkan.</p>'}</div>`:'';
  const kelola=(ONLINE&&adm)?`<div class="card"><h2>Pengguna aplikasi</h2><p class="mut" style="margin-top:0">Tambah akun untuk guru atau pengurus, atur perannya, atau atur ulang kata sandi.</p><div class="grid2"><button onclick="openUsers()">Kelola akun</button><button class="btn2" onclick="openAktivitas()">Lihat aktivitas</button></div></div>`:'';
  const lembaga=adm?`<div class="card"><h2>Data lembaga</h2>
   <label style="margin-top:0">Nama lembaga</label><input value="${esc(s.lembaga)}" onchange="saveSet('Mengubah nama lembaga',{lembaga:this.value.trim()||'Rumah Belajar Maryam'})">
@@ -1043,13 +1224,13 @@ function restoreFile(inp){
 }
 function formHapusSemua(){
  if(!can('admin'))return deny();
- openSheet(`<h2>Hapus semua data?</h2><p>Semua murid, guru, dan transaksi akan dihapus${ONLINE?' dari server dan semua perangkat':''}. Pengaturan lembaga tetap ada. Tindakan ini tidak bisa dibatalkan.</p>
+ openSheet(`<h2>Hapus semua data?</h2><p>Semua murid, guru, transaksi, dan catatan belajar akan dihapus${ONLINE?' dari server dan semua perangkat':''}. Pengaturan lembaga tetap ada. Tindakan ini tidak bisa dibatalkan.</p>
  <label>Ketik HAPUS untuk melanjutkan</label><input id="hp_k" autocapitalize="characters" autocomplete="off">
  <div style="display:grid;gap:8px;margin-top:14px"><button class="btnr" onclick="doHapusSemua()">Hapus semua data</button><button class="btn2" onclick="closeSheet()">Batal</button></div>`);
 }
 function doHapusSemua(){
  if($('#hp_k').value.trim().toUpperCase()!=='HAPUS')return toast('Ketik HAPUS dulu');
- ['murid','guru','trx'].forEach(c=>Object.keys(DB.recs[c]).forEach(id=>{const r=DB.recs[c][id];if(!r.del)putRaw(c,id,Object.assign({},r,{del:1}));}));
+ ['murid','guru','trx','cat'].forEach(c=>Object.keys(DB.recs[c]).forEach(id=>{const r=DB.recs[c][id];if(!r.del)putRaw(c,id,Object.assign({},r,{del:1}));}));
  DB.hist=[];DB.logQ.push({t:Date.now(),x:'Menghapus semua data'});
  persist();scheduleSync();closeSheet();render();toast('Semua data dihapus');
 }
@@ -1076,7 +1257,7 @@ async function openUsers(){
   openSheet(`<h2>Pengguna aplikasi</h2>
   <div>${r.daftar.map(u=>`<div class="item" onclick='formUser(${JSON.stringify(u).replace(/'/g,'&#39;')})'><div class="grow"><div>${esc(u.nama)}</div><div class="mut">${esc(u.username)} &middot; ${labelPeran(u.peran)}</div></div>${u.aktif?'':'<span class="badge b-off">Nonaktif</span>'}</div>`).join('')}</div>
   <div style="display:grid;gap:8px;margin-top:12px"><button onclick="formUser()">+ Tambah akun</button><button class="btn2" onclick="closeSheet()">Tutup</button></div>
-  <p class="mut" style="margin-top:12px">Admin: boleh semuanya. Pengisi: boleh mencatat dan mengubah murid, guru, dan transaksi. Hanya melihat: hanya bisa membuka data dan laporan.</p>`);
+  <p class="mut" style="margin-top:12px">Admin: boleh semuanya. Pengisi: boleh mencatat dan mengubah murid, iuran, dan transaksi, tanpa melihat honor guru dan saldo kas. Guru: hanya mengisi catatan belajar murid, tanpa melihat data uang. Hanya melihat: hanya bisa membuka data dan laporan.</p>`);
  }catch(e){openSheet('<h2>Pengguna aplikasi</h2><div class="err">'+esc(pesanGalat(e))+'</div><button class="btn2 full" onclick="closeSheet()">Tutup</button>');}
 }
 function formUser(u){
@@ -1084,7 +1265,7 @@ function formUser(u){
  openSheet(`<h2>${baru?'Tambah akun':'Ubah akun'}</h2>
  <label>Nama pengguna (huruf kecil dan angka)</label><input id="u_u" value="${esc(u.username)}" ${baru?'':'disabled'} autocapitalize="none">
  <label>Nama lengkap</label><input id="u_n" value="${esc(u.nama)}">
- <label>Peran</label><select id="u_p">${['admin','pengisi','pelihat'].map(p=>`<option value="${p}" ${u.peran===p?'selected':''}>${labelPeran(p)}</option>`).join('')}</select>
+ <label>Peran</label><select id="u_p">${['admin','pengisi','guru','pelihat'].map(p=>`<option value="${p}" ${u.peran===p?'selected':''}>${labelPeran(p)}</option>`).join('')}</select>
  <label>${baru?'Kata sandi awal (minimal 6 karakter)':'Kata sandi baru (kosongkan kalau tidak diganti)'}</label><input id="u_s" type="text" autocomplete="off">
  <label class="row" style="margin-top:12px"><input type="checkbox" id="u_a" ${u.aktif?'checked':''}> Akun aktif</label>
  <div id="u_err"></div>
